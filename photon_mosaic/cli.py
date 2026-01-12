@@ -293,8 +293,14 @@ def save_timestamped_config(config, configs_dir):
     return timestamp, config_path
 
 
-def build_snakemake_command(args, config_path):
+def build_snakemake_command(
+    args: argparse.Namespace,
+    config_path: Path,
+    workflow_directory: Path,
+) -> list[str]:
     """Build the base snakemake command with common arguments.
+
+    Will auto-unlock any locked snakemake steps.
 
     Parameters
     ----------
@@ -302,6 +308,8 @@ def build_snakemake_command(args, config_path):
         Parsed command line arguments
     config_path : Path
         Path to the config file to use
+    workflow_directory : Path
+        Path to the workflow directory where .snakemake will be created
 
     Returns
     -------
@@ -317,6 +325,8 @@ def build_snakemake_command(args, config_path):
         "snakemake",
         "--snakefile",
         str(snakefile_path),
+        "--directory",
+        str(workflow_directory),
         "--jobs",
         str(args.jobs),
         "--configfile",
@@ -334,8 +344,28 @@ def build_snakemake_command(args, config_path):
     if not args.verbose:
         # Default to quiet mode unless --verbose is specified
         cmd.append("--quiet")
-
+    if is_the_workflow_locked(workflow_directory):
+        cmd.append("--unlock")
     return cmd
+
+
+def is_the_workflow_locked(workflow_directory: Path) -> bool:
+    """Check if the workflow is locked by looking for lock files.
+    Parameters
+    ----------
+    workflow_directory : Path
+        Path to the workflow directory
+    Returns
+    -------
+    bool
+        True if lock files are present, False otherwise
+    """
+
+    locks_dir = workflow_directory / ".snakemake" / "locks"
+    if not locks_dir.exists():
+        return False
+    lock_files = list(locks_dir.glob("*.lock"))
+    return len(lock_files) > 0
 
 
 def configure_slurm_execution(cmd, config):
@@ -432,9 +462,8 @@ def configure_slurm_execution(cmd, config):
     return cmd
 
 
-def execute_pipeline_with_retry(cmd, log_path):
-    """Execute the snakemake pipeline with automatic
-    unlock and retry on lock errors.
+def execute_pipeline(cmd, log_path):
+    """Execute the snakemake pipeline.
 
     Parameters
     ----------
@@ -450,58 +479,25 @@ def execute_pipeline_with_retry(cmd, log_path):
     """
     logger = logging.getLogger(__name__)
 
+    logger.debug(f"Saving logs to: {log_path}")
+    logger.info(f"Launching snakemake with command: {' '.join(cmd)}")
+
+    # Run initial command
     with open(log_path, "w") as logfile:
-        logger.debug(f"Saving logs to: {log_path}")
-        logger.info(f"Launching snakemake with command: {' '.join(cmd)}")
+        if "--unlock" in cmd:
+            logger.info("Unlocking workflow before execution")
+            result = subprocess.run(cmd, stdout=logfile, stderr=logfile)
+
+            if result.returncode != 0:
+                logger.error(
+                    "Failed to unlock workflow. Check log file for details."
+                )
+                return result.returncode
+
+            cmd = [arg for arg in cmd if arg != "--unlock"]
+            cmd.append("--rerun-incomplete")
+
         result = subprocess.run(cmd, stdout=logfile, stderr=logfile)
-
-        # If workflow is locked, automatically unlock and retry
-        if result.returncode != 0:
-            # Check if the error is related to locking by reading the log
-            with open(log_path, "r") as log_read:
-                log_content = log_read.read()
-                if (
-                    "locked" in log_content.lower()
-                    or "lock" in log_content.lower()
-                ):
-                    logger.warning(
-                        "Workflow appears to be locked. "
-                        "Attempting automatic unlock and retry..."
-                    )
-
-                    # Create unlock command
-                    unlock_cmd = cmd.copy()
-                    unlock_cmd.append("--unlock")
-
-                    # Run unlock command
-                    with open(log_path, "a") as logfile_append:
-                        logfile_append.write("\n--- Auto-unlock attempt ---\n")
-                        unlock_result = subprocess.run(
-                            unlock_cmd,
-                            stdout=logfile_append,
-                            stderr=logfile_append,
-                        )
-
-                    # If unlock succeeded, retry the original command
-                    if unlock_result.returncode == 0:
-                        logger.info(
-                            "Automatic unlock successful. "
-                            "Retrying pipeline execution..."
-                        )
-                        with open(log_path, "a") as logfile_append:
-                            logfile_append.write(
-                                "\n--- Retry after unlock ---\n"
-                            )
-                            result = subprocess.run(
-                                cmd,
-                                stdout=logfile_append,
-                                stderr=logfile_append,
-                            )
-                    else:
-                        logger.error(
-                            "Automatic unlock failed. "
-                            "Please check the log file for details."
-                        )
 
     return result.returncode
 
@@ -611,8 +607,9 @@ def main():
 
     # Build snakemake command
     log_section_header(logger, "BUILDING SNAKEMAKE COMMAND")
-    cmd = build_snakemake_command(args, config_path)
+    cmd = build_snakemake_command(args, config_path, output_dir)
     logger.info(f"Base command: {' '.join(cmd[:5])}...")
+    logger.info(f"Workflow directory: {output_dir}")
 
     # Configure SLURM execution if enabled
     cmd = configure_slurm_execution(cmd, config)
@@ -632,7 +629,7 @@ def main():
     logger.info("")
     logger.info("Starting pipeline execution...")
 
-    return_code = execute_pipeline_with_retry(cmd, log_path)
+    return_code = execute_pipeline(cmd, log_path)
 
     # Report final status
     log_section_header(logger, "PIPELINE EXECUTION COMPLETE")
