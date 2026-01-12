@@ -39,7 +39,7 @@ def run_photon_mosaic(workdir, configfile, timeout=None):
 class TestMetadataFunctionality:
     """Test class for metadata extraction functionality."""
 
-    def test_custom_metadata_extraction(self, custom_metadata_env):
+    def test_custom_metadata_extraction(self, custom_metadata_env, check_logs):
         """Test metadata extraction from custom format data."""
         # Create discoverer for custom metadata format
         discoverer = DatasetDiscoverer(
@@ -76,8 +76,11 @@ class TestMetadataFunctionality:
         assert (
             dataset.subject_metadata == ""
         ), "Custom format should have empty subject metadata"
+        check_logs()
 
-    def test_neuroblueprint_metadata_extraction(self, neuroblueprint_env):
+    def test_neuroblueprint_metadata_extraction(
+        self, neuroblueprint_env, check_logs
+    ):
         """Test metadata extraction from NeuroBlueprint format data."""
         # Create discoverer for NeuroBlueprint format
         discoverer = DatasetDiscoverer(
@@ -135,8 +138,9 @@ class TestMetadataFunctionality:
             assert any(
                 meta != "" for meta in session_metas
             ), "At least one session should have metadata"
+        check_logs()
 
-    def test_metadata_inference(self):
+    def test_metadata_inference(self, check_logs):
         """Test that metadata keys are correctly inferred from folder names."""
         # Test the static method for inferring metadata
         folder_names = [
@@ -159,8 +163,9 @@ class TestMetadataFunctionality:
         # Check that patterns are reasonable
         assert "strain-([^_]+)" in inferred.values()
         assert "sex-([^_]+)" in inferred.values()
+        check_logs()
 
-    def test_neuroblueprint_format_validation(self):
+    def test_neuroblueprint_format_validation(self, check_logs):
         """Test NeuroBlueprint format validation."""
         # Valid NeuroBlueprint subject names (numeric IDs only)
         valid_subjects = [
@@ -205,8 +210,11 @@ class TestMetadataFunctionality:
             assert not DatasetDiscoverer._is_neuroblueprint_format(
                 name, "sub"
             ), f"{name} should be invalid"
+        check_logs()
 
-    def test_photon_mosaic_cli_custom_metadata(self, custom_metadata_env):
+    def test_photon_mosaic_cli_custom_metadata(
+        self, custom_metadata_env, check_logs
+    ):
         """Test photon-mosaic CLI with custom metadata format."""
         # Run photon-mosaic with dry-run to test metadata processing
         result = run_photon_mosaic(
@@ -227,9 +235,10 @@ class TestMetadataFunctionality:
         assert (
             "snakemake pipeline completed successfully" in output.lower()
         ), "Pipeline should complete successfully"
+        check_logs()
 
     def test_photon_mosaic_cli_neuroblueprint_metadata(
-        self, neuroblueprint_env
+        self, neuroblueprint_env, check_logs
     ):
         """Test photon-mosaic CLI with NeuroBlueprint metadata format."""
         # Run photon-mosaic with dry-run to test metadata processing
@@ -251,9 +260,10 @@ class TestMetadataFunctionality:
         assert (
             "snakemake pipeline completed successfully" in output.lower()
         ), "Pipeline should complete successfully with NeuroBlueprint format"
+        check_logs()
 
     def test_noncontinuous_ids_preservation(
-        self, neuroblueprint_noncontinuous_env
+        self, neuroblueprint_noncontinuous_env, check_logs
     ):
         """Test that non-continuous subject and session IDs are preserved."""
         # local variables use module-level imports: re, Path
@@ -341,9 +351,10 @@ class TestMetadataFunctionality:
                     f"Session name incorrectly uses "
                     f"sequential numbering: {session_name}"
                 )
+        check_logs()
 
     def test_alphanumeric_subject_and_session_ids(
-        self, tmp_path, metadata_base_config
+        self, tmp_path, metadata_base_config, check_logs
     ):
         """Test that alphanumeric folder names are preserved in transformed
         names.
@@ -402,8 +413,9 @@ class TestMetadataFunctionality:
 
         # Subject folder should be discovered as original name
         assert subject_folder_name in discoverer.original_datasets
+        check_logs()
 
-    def test_simple_discovery_minimal(self, tmp_path):
+    def test_simple_discovery_minimal(self, tmp_path, check_logs):
         """Test exclude_datasets filters out matching dataset folders.
 
         Create two subjects, one matching an exclusion pattern. The
@@ -448,3 +460,4 @@ class TestMetadataFunctionality:
         # Check that img001.tif is in the mapping
         # (with potential subdirectory path)
         assert any("img001.tif" in tiff for tiff in mapping[1])
+        check_logs()

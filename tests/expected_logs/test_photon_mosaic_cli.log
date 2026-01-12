@@ -1,4 +1,4 @@
-Test: tests<PATH>::test_photon_mosaic_cli
+Test: tests<PATH>::test_photon_mosaic_cli_dry_run
 
 derivatives/
 ├── photon-mosaic

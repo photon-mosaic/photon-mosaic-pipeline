@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.regression_helpers import check_logs as _check_logs
 from tests.test_data_factory import DataFactory
 from tests.tree_helpers import tree as tree_lines
 
@@ -407,3 +408,38 @@ def log_test_fs(request):
         print(
             f"Error writing test filesystem log for {request.node.name}: {exc}"
         )
+
+
+@pytest.fixture
+def check_logs(request):
+    """
+    Fixture that provides a function to check file structure logs.
+
+    This fixture can be used in tests to verify that generated file
+    structures match expected baselines. Call it at the end of your test.
+
+    Usage:
+        def test_my_feature(check_logs):
+            # ... test logic ...
+            check_logs()
+
+    The function will automatically:
+    1. Find the most recent generated log in tests/logs/
+    2. Check if an expected baseline exists in tests/expected_logs/
+    3. If no baseline exists, normalize and save the current log as the
+       baseline
+    4. If baseline exists, compare the normalized current log against the
+       baseline and fail the test on mismatch
+    """
+    # Track if check_logs was called
+    check_requested = {"called": False, "fail_on_mismatch": True}
+
+    def _checker(fail_on_mismatch: bool = True):
+        check_requested["called"] = True
+        check_requested["fail_on_mismatch"] = fail_on_mismatch
+
+    yield _checker
+
+    # After test completes and log_test_fs has written the log, do the check
+    if check_requested["called"]:
+        _check_logs(request, check_requested["fail_on_mismatch"])

@@ -133,7 +133,7 @@ def check_output_files(
                     ), f"Enhanced file {enhanced_file} is empty"
 
 
-def test_snakemake_dry_run(snake_test_env):
+def test_snakemake_dry_run(snake_test_env, check_logs):
     """Test that snakemake can do a dry run."""
     print("\n=== Starting snakemake dry run test ===")
     print(f"Working directory: {snake_test_env['workdir']}")
@@ -174,9 +174,10 @@ def test_snakemake_dry_run(snake_test_env):
         f"Snakemake dry-run failed:\nSTDOUT:\n{result.stdout}\n"
         f"STDERR:\n{result.stderr}"
     )
+    check_logs()
 
 
-def test_snakemake_execution(snake_test_env):
+def test_snakemake_execution(snake_test_env, check_logs):
     """Test that snakemake can execute the workflow."""
     result = run_snakemake(
         snake_test_env["workdir"], snake_test_env["configfile"]
@@ -205,9 +206,12 @@ def test_snakemake_execution(snake_test_env):
         snake_test_env["map_of_tiffs"],
         tiff_patterns,
     )
+    check_logs()
 
 
-def test_snakemake_with_contrast(snake_test_env, test_config_with_contrast):
+def test_snakemake_with_contrast(
+    snake_test_env, test_config_with_contrast, check_logs
+):
     """
     Test that snakemake can execute the workflow with contrast enhancement
     preprocessing.
@@ -242,9 +246,10 @@ def test_snakemake_with_contrast(snake_test_env, test_config_with_contrast):
         tiff_patterns,
         check_enhanced=True,
     )
+    check_logs()
 
 
-def test_photon_mosaic_cli_dry_run(snake_test_env):
+def test_photon_mosaic_cli_dry_run(snake_test_env, check_logs):
     """Test that photon-mosaic can do a dry run."""
     cmd = [
         "photon-mosaic",
@@ -265,9 +270,10 @@ def test_photon_mosaic_cli_dry_run(snake_test_env):
         f"photon-mosaic CLI run failed:\nSTDOUT:\n{result.stdout}\n"
         f"STDERR:\n{result.stderr}"
     )
+    check_logs()
 
 
-def test_photon_mosaic_cli(snake_test_env):
+def test_photon_mosaic_cli(snake_test_env, check_logs):
     """Test photon-mosaic pipeline."""
     cmd = [
         "photon-mosaic",
@@ -288,9 +294,10 @@ def test_photon_mosaic_cli(snake_test_env):
         f"photon-mosaic CLI run failed:\nSTDOUT:\n{result.stdout}\n"
         f"STDERR:\n{result.stderr}"
     )
+    check_logs()
 
 
-def test_incremental_processing(snake_test_env):
+def test_incremental_processing(snake_test_env, check_logs):
     """Test that adding a new TIFF only triggers processing of the new file.
 
     This test verifies that Snakemake correctly detects when files already
@@ -378,3 +385,4 @@ def test_incremental_processing(snake_test_env):
     )
 
     print("\n=== Test passed: Only new TIFF will be processed ===")
+    check_logs()
