@@ -274,22 +274,19 @@ def neuroblueprint_noncontinuous_env(
     }
 
 
-@pytest.fixture(autouse=True)
-def log_test_fs(request):
+def _write_test_log(request) -> Path | None:
     """
-    After each test, write a snapshot of relevant test directories to
+    Write a snapshot of relevant test directories to
     `tests/logs/<testname>_<timestamp>.log`.
 
-    The fixture inspects other fixtures used by the test (via
+    This helper inspects fixtures used by the test (via
     `request.node.funcargs`) to discover Path-like objects such as
     `workdir`, `raw_data` or `processed_data`. If none are found it
-    falls back to the static `tests/data` directory. This helper will
-    never raise; failures to write the log are printed so tests are not
-    affected.
-    """
-    # run test
-    yield
+    falls back to the static `tests/data` directory.
 
+    Returns:
+        Path to the written log file, or None if writing failed.
+    """
     try:
         test_name = request.node.name
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
@@ -420,6 +417,8 @@ def log_test_fs(request):
                             lf.write(f"{rel}\n")
                     lf.write("\n")
 
+        return log_path
+
     except (
         Exception
     ) as exc:  # pragma: no cover - avoid breaking tests on logging errors
@@ -427,6 +426,11 @@ def log_test_fs(request):
         print(
             f"Error writing test filesystem log for {request.node.name}: {exc}"
         )
+        return None
+
+
+# Track which tests have had their logs written by check_logs fixture
+_tests_logged_by_check_logs: set = set()
 
 
 @pytest.fixture
@@ -459,6 +463,17 @@ def check_logs(request):
 
     yield _checker
 
-    # After test completes and log_test_fs has written the log, do the check
+    # Mark this test as handled by check_logs so log_test_fs skips it
+    _tests_logged_by_check_logs.add(request.node.nodeid)
+
+    # Write the log file first, then check it
     if check_requested["called"]:
+        log_path = _write_test_log(request)
+        if log_path is None:
+            # Log writing failed - skip checking to avoid confusing error
+            print(
+                f"Warning: Could not write log for {request.node.name}, "
+                "skipping regression check"
+            )
+            return
         _check_logs(request, check_requested["fail_on_mismatch"])
