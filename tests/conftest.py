@@ -17,25 +17,29 @@ from tests.test_data_factory import DataFactory
 from tests.tree_helpers import tree as tree_lines
 
 
-def run_photon_mosaic(workdir, configfile, timeout=None):
-    """Helper function to run photon-mosaic CLI with dry-run.
+@pytest.fixture
+def run_photon_mosaic():
+    def inner_run_photon_mosaic(workdir, configfile, timeout=None):
+        """Helper function to run photon-mosaic CLI with dry-run.
 
-    timeout: seconds to wait for the subprocess to complete. If None,
-    wait indefinitely (no timeout).
-    """
-    cmd = [
-        "photon-mosaic",
-        "--config",
-        str(configfile),
-        "--log-level",
-        "DEBUG",
-    ]
+        timeout: seconds to wait for the subprocess to complete. If None,
+        wait indefinitely (no timeout).
+        """
+        cmd = [
+            "photon-mosaic",
+            "--config",
+            str(configfile),
+            "--log-level",
+            "DEBUG",
+        ]
 
-    result = subprocess.run(
-        cmd, cwd=workdir, capture_output=True, text=True, timeout=timeout
-    )
+        result = subprocess.run(
+            cmd, cwd=workdir, capture_output=True, text=True, timeout=timeout
+        )
 
-    return result
+        return result
+
+    return inner_run_photon_mosaic
 
 
 @pytest.fixture
