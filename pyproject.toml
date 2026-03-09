@@ -12,7 +12,8 @@ dependencies = [
   "snakemake-executor-plugin-slurm",
   "PyYAML",
   "derotation",
-  "suite2p-NIU"
+  "suite2p-NIU",
+  "stiminterp"
 ]
 
 license = {text = "BSD-3-Clause"}
