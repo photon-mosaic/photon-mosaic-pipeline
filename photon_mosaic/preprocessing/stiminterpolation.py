@@ -72,6 +72,8 @@ def run(
 
     # Run stiminterp
     logging.info(f"Running stiminterp pipeline for {str(input_file)}")
+    if path_to_stim_h5 == "":
+        path_to_stim_h5 = None
     run_stiminterp(
         input_tif=str(input_file),
         input_h5=path_to_stim_h5,
