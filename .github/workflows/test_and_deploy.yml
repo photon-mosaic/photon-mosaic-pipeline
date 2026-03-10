@@ -40,7 +40,6 @@ jobs:
       # Run tests
       - uses: neuroinformatics-unit/actions/test@v2
         with:
-          shell: bash
           python-version: ${{ matrix.python-version }}
 
   build_sdist_wheels:
