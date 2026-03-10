@@ -34,7 +34,13 @@ def run_photon_mosaic():
         ]
 
         result = subprocess.run(
-            cmd, cwd=workdir, capture_output=True, text=True, timeout=timeout
+            cmd,
+            cwd=workdir,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            encoding="utf-8",
+            errors="replace",
         )
 
         return result
