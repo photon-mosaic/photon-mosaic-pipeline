@@ -119,6 +119,8 @@ python =
 [testenv]
 deps =
     .[dev]
+passenv =
+    USERNAME
 commands =
     pytest -v --color=yes --cov=photon_mosaic --cov-report=xml
 """
