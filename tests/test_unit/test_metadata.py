@@ -7,33 +7,11 @@ for both custom metadata and NeuroBlueprint formats.
 
 import re
 import shutil
-import subprocess
 from pathlib import Path
 
 import yaml
 
 from photon_mosaic.dataset_discovery import DatasetDiscoverer
-
-
-def run_photon_mosaic(workdir, configfile, timeout=None):
-    """Helper function to run photon-mosaic CLI with dry-run.
-
-    timeout: seconds to wait for the subprocess to complete. If None,
-    wait indefinitely (no timeout).
-    """
-    cmd = [
-        "photon-mosaic",
-        "--config",
-        str(configfile),
-        "--log-level",
-        "DEBUG",
-    ]
-
-    result = subprocess.run(
-        cmd, cwd=workdir, capture_output=True, text=True, timeout=timeout
-    )
-
-    return result
 
 
 class TestMetadataFunctionality:
@@ -206,7 +184,9 @@ class TestMetadataFunctionality:
                 name, "sub"
             ), f"{name} should be invalid"
 
-    def test_photon_mosaic_cli_custom_metadata(self, custom_metadata_env):
+    def test_photon_mosaic_cli_custom_metadata(
+        self, custom_metadata_env, run_photon_mosaic
+    ):
         """Test photon-mosaic CLI with custom metadata format."""
         # Run photon-mosaic with dry-run to test metadata processing
         result = run_photon_mosaic(
@@ -229,7 +209,7 @@ class TestMetadataFunctionality:
         ), "Pipeline should complete successfully"
 
     def test_photon_mosaic_cli_neuroblueprint_metadata(
-        self, neuroblueprint_env
+        self, neuroblueprint_env, run_photon_mosaic
     ):
         """Test photon-mosaic CLI with NeuroBlueprint metadata format."""
         # Run photon-mosaic with dry-run to test metadata processing
@@ -253,7 +233,7 @@ class TestMetadataFunctionality:
         ), "Pipeline should complete successfully with NeuroBlueprint format"
 
     def test_noncontinuous_ids_preservation(
-        self, neuroblueprint_noncontinuous_env
+        self, neuroblueprint_noncontinuous_env, run_photon_mosaic
     ):
         """Test that non-continuous subject and session IDs are preserved."""
         # local variables use module-level imports: re, Path
@@ -343,7 +323,7 @@ class TestMetadataFunctionality:
                 )
 
     def test_alphanumeric_subject_and_session_ids(
-        self, tmp_path, metadata_base_config
+        self, tmp_path, metadata_base_config, run_photon_mosaic
     ):
         """Test that alphanumeric folder names are preserved in transformed
         names.
