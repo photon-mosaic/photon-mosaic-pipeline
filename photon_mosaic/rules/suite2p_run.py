@@ -5,7 +5,11 @@ Snakemake rule for running Suite2P.
 import traceback
 from pathlib import Path
 from typing import Optional
-
+import tifffile
+import matplotlib.pyplot as plt
+from skimage import img_as_ubyte
+from skimage.exposure import rescale_intensity
+import numpy as np
 from suite2p import run_s2p
 from suite2p.default_ops import default_ops
 
@@ -33,7 +37,7 @@ def run_suite2p(
 
     Returns
     -------
-    None
+    ops: dict
         The function runs Suite2P and saves results to the specified paths.
         If an error occurs, it logs the error to an error.txt file in the
         dataset folder.
@@ -46,11 +50,13 @@ def run_suite2p(
         user_ops_dict=user_ops_dict,
     )
     try:
-        run_s2p(ops=ops)
+        ops = run_s2p(ops=ops)
     except Exception as e:
         with open(dataset_folder / "error.txt", "a") as f:
             f.write(f"Error: {e}\n")
             f.write(traceback.format_exc())
+
+    return ops
 
 
 def get_edited_options(
@@ -99,3 +105,62 @@ def get_edited_options(
     ops["data_path"] = [str(input_path)]
 
     return ops
+
+
+def save_suite2p_meanImgs(
+    s2p_ops: dict
+):
+    """
+    This function saves meanImg(s) from Suite2P output.
+
+    Parameters
+    ----------
+    ops : dict
+        A dictionary containing Suite2P output.
+
+    Returns
+    -------
+    None
+        The function saves meanImg(s) in the
+        suite2p output folder.
+    """
+    print("Saving meanImgs from Suite2p ...")
+
+    img1 = s2p_ops["meanImg"]
+    img1_uint8 = img_as_ubyte(
+        adjust_intensity(
+            img_as_ubyte(
+                rescale_intensity(img1, in_range="image", out_range=(0, 1))
+            )
+        )
+    )
+
+    plt.imsave(
+        Path(s2p_ops["save_folder"]) / "plane0" / "meanImg.png",
+        img1_uint8,
+        cmap="gray",
+    )
+    tifffile.imwrite(Path(s2p_ops["save_folder"]) / "plane0" / "meanImg.tif",
+                        img1.astype("int16"))
+
+    if s2p_ops["nchannels"] == 2:
+        img2 = s2p_ops["meanImg_chan2"]
+        img2_uint8 = adjust_intensity(
+            img_as_ubyte(
+                rescale_intensity(img2, in_range="image", out_range=(0, 1))
+            )
+        )
+
+        plt.imsave(
+            Path(s2p_ops["save_folder"]) / "plane0" / "meanImg_chan2.png",
+            img2_uint8,
+            cmap="gray",
+        )
+        tifffile.imwrite(Path(s2p_ops["save_folder"]) / "plane0" / "meanImg_chan2.tif",
+                            img2.astype("int16"))
+
+def adjust_intensity(img):
+    p2, p98 = np.percentile(img, (2, 98))  # Get min/max intensities
+    img = rescale_intensity(img, in_range=(p2, p98), out_range=(0, 255))
+
+    return img.astype(np.uint8)

@@ -74,7 +74,7 @@ rule suite2p:
     resources:
         **(slurm_config if config.get("use_slurm") else {}),
     run:
-        from photon_mosaic.rules.suite2p_run import run_suite2p
+        from photon_mosaic.rules.suite2p_run import run_suite2p, save_suite2p_meanImgs
         from photon_mosaic import log_cuda_availability
         from pathlib import Path
 
@@ -86,8 +86,11 @@ rule suite2p:
         output_path = Path(output.F).resolve()
         dataset_folder = Path(params.dataset_folder).resolve()
 
-        run_suite2p(
+        ops = run_suite2p(
             str(output_path),
             dataset_folder,
             config["suite2p_ops"],
         )
+
+        # Suite2p Extension
+        save_suite2p_meanImgs(ops)
