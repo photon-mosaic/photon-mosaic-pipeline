@@ -146,6 +146,73 @@ class DatasetDiscoverer:
         else:
             return f"ses-{session_idx:03d}"
 
+    def get_tiff_relative_path_for_subject_session_file(
+        self, subject_name: str, session_idx: int, filename: str
+    ) -> str:
+        """
+        Get the relative path for a specific TIFF file by its filename.
+
+        Parameters
+        ----------
+        subject_name : str
+            Transformed subject name (e.g., "sub-001_date-20250225")
+        session_idx : int
+            Session index
+        filename : str
+            Just the filename (e.g., "type_1_01.tif")
+
+        Returns
+        -------
+        str
+            Relative path to the TIFF file from dataset folder
+            (e.g., "imaging/type_1_01.tif" or just "type_1_01.tif")
+        """
+        # Find the dataset with matching transformed name
+        dataset = next(
+            (
+                ds
+                for ds in self.datasets
+                if ds.transformed_name == subject_name
+            ),
+            None,
+        )
+        if not dataset:
+            raise ValueError(f"Subject {subject_name} not found")
+
+        # Get the relative TIFF paths for this session
+        tiff_files = dataset.tiff_files.get(session_idx, [])
+
+        for tiff_path in tiff_files:
+            if Path(tiff_path).name == filename:
+                return tiff_path
+
+        raise ValueError(
+            f"TIFF file {filename} not found in subject {subject_name}, "
+            f"session {session_idx}"
+        )
+
+    @staticmethod
+    def extract_session_idx_from_session_name(session_name: str) -> int:
+        """
+        Extract session index from session name.
+
+        Parameters
+        ----------
+        session_name : str
+            Session name like "ses-001_date-20250225" or "ses-003"
+
+        Returns
+        -------
+        int
+            Session index
+        """
+        match = re.match(r"ses-(\d+)", session_name)
+        if match:
+            return int(match.group(1))
+        raise ValueError(
+            f"Could not extract session index from {session_name}"
+        )
+
     @staticmethod
     def _extract_session_id_from_folder_name(folder_name: str) -> str:
         """
@@ -232,7 +299,7 @@ class DatasetDiscoverer:
 
         # First part should be prefix-identifier
         first_part = parts[0]
-        if not re.match(rf"{expected_prefix}-[a-zA-Z0-9]+", first_part):
+        if not re.fullmatch(rf"{expected_prefix}-\d+", first_part):
             return False
 
         # Remaining parts should be key-value pairs
@@ -627,7 +694,7 @@ class DatasetDiscoverer:
             for tiff_pattern in self.tiff_patterns:
                 files_in_session = sorted(
                     [
-                        f.name
+                        str(f.relative_to(dataset_path))
                         for f in session_folder.rglob(tiff_pattern)
                         if f.is_file()
                     ]
@@ -711,7 +778,7 @@ class DatasetDiscoverer:
                 for tiff_pattern in self.tiff_patterns:
                     files_in_session = sorted(
                         [
-                            f.name
+                            str(f.relative_to(dataset_path))
                             for f in session_folder.rglob(tiff_pattern)
                             if f.is_file()
                         ]
@@ -782,7 +849,7 @@ class DatasetDiscoverer:
                     for tiff_pattern in self.tiff_patterns:
                         files_in_session = sorted(
                             [
-                                f.name
+                                str(f.relative_to(dataset_path))
                                 for f in session_folder.rglob(tiff_pattern)
                                 if f.is_file()
                             ]
@@ -823,7 +890,7 @@ class DatasetDiscoverer:
                 ):
                     files_found = sorted(
                         [
-                            f.name
+                            str(f.relative_to(dataset_path))
                             for f in dataset_path.rglob(tiff_pattern)
                             if f.is_file()
                         ]

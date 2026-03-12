@@ -62,12 +62,16 @@ def log_cuda_availability():
     try:
         import torch
 
+        #  log torch version
+        logger.info(f"  PyTorch version: {torch.__version__}")
+
         cuda_available = torch.cuda.is_available()
         logger.info(f"CUDA sanity check - Available: {cuda_available}")
 
         if cuda_available:
             logger.info(f"  Device count: {torch.cuda.device_count()}")
             logger.info(f"  Device name: {torch.cuda.get_device_name(0)}")
+            logger.info(f"  CUDA module loaded: {torch.version.cuda}")
         else:
             logger.warning("CUDA not available - jobs may not use GPU!")
 

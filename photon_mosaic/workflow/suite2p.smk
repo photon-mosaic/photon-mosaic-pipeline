@@ -17,6 +17,7 @@ Output: Suite2p analysis results (F.npy, data.bin) in suite2p/plane0/ directory
 import re
 from photon_mosaic.snakemake_utils import cross_platform_path
 
+
 rule suite2p:
     input:
         tiffs=lambda wildcards: [
@@ -25,11 +26,13 @@ rule suite2p:
                 / wildcards.subject_name
                 / wildcards.session_name
                 / "funcimg"
-                / f"{output_pattern}{tiff_name}"
+                / f"{output_pattern}{Path(tiff_name).name}"
             )
-            for tiff_name in discoverer.tiff_files[discoverer.original_datasets[discoverer.transformed_datasets.index(wildcards.subject_name)]][
-                int(wildcards.session_name.split("_")[0].replace("ses-", ""))
-            ]
+            for tiff_name in discoverer.tiff_files[
+                discoverer.original_datasets[
+                    discoverer.transformed_datasets.index(wildcards.subject_name)
+                ]
+            ][discoverer.extract_session_idx_from_session_name(wildcards.session_name)]
         ],
     output:
         F=cross_platform_path(
@@ -49,7 +52,7 @@ rule suite2p:
             / "suite2p"
             / "plane0"
             / "data.bin"
-        )
+        ),
     params:
         dataset_folder=lambda wildcards: cross_platform_path(
             Path(processed_data_base).resolve()
@@ -59,13 +62,24 @@ rule suite2p:
         ),
     wildcard_constraints:
         subject_name="|".join(discoverer.transformed_datasets),
-        session_name="|".join([discoverer.get_session_name(i, session_idx) for i in range(len(discoverer.transformed_datasets))
-                              for session_idx in discoverer.tiff_files[discoverer.original_datasets[i]].keys()]),
+        session_name="|".join(
+            [
+                discoverer.get_session_name(i, session_idx)
+                for i in range(len(discoverer.transformed_datasets))
+                for session_idx in discoverer.tiff_files[
+                    discoverer.original_datasets[i]
+                ].keys()
+            ]
+        ),
     resources:
         **(slurm_config if config.get("use_slurm") else {}),
     run:
         from photon_mosaic.rules.suite2p_run import run_suite2p, save_suite2p_meanImgs
+        from photon_mosaic import log_cuda_availability
         from pathlib import Path
+
+        # Check CUDA availability for this job
+        log_cuda_availability()
 
         # Ensure all paths are properly resolved
         input_paths = [Path(tiff).resolve() for tiff in input.tiffs]

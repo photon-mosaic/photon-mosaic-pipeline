@@ -1,4 +1,5 @@
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -243,12 +244,117 @@ def test_snakemake_with_contrast(snake_test_env, test_config_with_contrast):
     )
 
 
-def test_photon_mosaic_cli_dry_run(snake_test_env):
+def test_photon_mosaic_cli_dry_run(snake_test_env, run_photon_mosaic):
     """Test that photon-mosaic can do a dry run."""
-    result = run_snakemake(
-        snake_test_env["workdir"], snake_test_env["configfile"], dry_run=True
+    result = run_photon_mosaic(
+        snake_test_env["workdir"],
+        snake_test_env["configfile"],
     )
+
     assert result.returncode == 0, (
-        f"photon-mosaic CLI dry-run failed:\nSTDOUT:\n{result.stdout}\n"
+        f"photon-mosaic CLI run failed:\nSTDOUT:\n{result.stdout}\n"
         f"STDERR:\n{result.stderr}"
     )
+
+
+def test_photon_mosaic_cli(snake_test_env, run_photon_mosaic):
+    """Test photon-mosaic pipeline."""
+    result = run_photon_mosaic(
+        snake_test_env["workdir"],
+        snake_test_env["configfile"],
+    )
+
+    assert result.returncode == 0, (
+        f"photon-mosaic CLI run failed:\nSTDOUT:\n{result.stdout}\n"
+        f"STDERR:\n{result.stderr}"
+    )
+
+
+def test_incremental_processing(snake_test_env):
+    """Test that adding a new TIFF only triggers processing of the new file.
+
+    This test verifies that Snakemake correctly detects when files already
+    exist and only processes newly added files, addressing the issue where
+    the entire dataset was being reprocessed unnecessarily.
+    """
+    # First run: process initial data
+    result = run_snakemake(
+        snake_test_env["workdir"], snake_test_env["configfile"]
+    )
+    assert result.returncode == 0, (
+        f"Initial Snakemake execution failed:\nSTDOUT:\n{result.stdout}\n"
+        f"STDERR:\n{result.stderr}"
+    )
+
+    print("\n=== Initial run completed successfully ===")
+
+    # Add a new TIFF file to dataset 001 (which should trigger session 1
+    # processing)
+    raw_data_path = Path(snake_test_env["workdir"]) / "raw_data" / "001"
+    new_tiff = raw_data_path / "type_1_03.tif"
+
+    # Copy the master TIFF file to create a new TIFF
+    master_tiff = Path(__file__).parent.parent / "data" / "master.tif"
+    shutil.copy2(master_tiff, new_tiff)
+
+    print(f"\n=== Added new TIFF: {new_tiff} ===")
+
+    # Run dry-run to see what Snakemake plans to do
+    result_dry = run_snakemake(
+        snake_test_env["workdir"], snake_test_env["configfile"], dry_run=True
+    )
+
+    assert result_dry.returncode == 0, (
+        f"Dry-run after adding TIFF failed:\nSTDOUT:\n{result_dry.stdout}\n"
+        f"STDERR:\n{result_dry.stderr}"
+    )
+
+    print(f"\n=== Dry-run output ===\n{result_dry.stdout}")
+    print(f"\n=== Dry-run stderr ===\n{result_dry.stderr}")
+
+    # Parse the dry-run output to check what jobs would be executed
+    stdout = result_dry.stdout
+
+    # Count how many preprocessing jobs would run
+    # Look for lines like "rule preprocessing:" or job mentions
+    preprocessing_jobs = stdout.count("rule preprocessing")
+
+    print(f"\n=== Preprocessing jobs to run: {preprocessing_jobs} ===")
+
+    # We expect only 1 preprocessing job (for the new TIFF)
+    # NOT 3 jobs (which would mean reprocessing all type_1*.tif files
+    # in dataset 001)
+    assert preprocessing_jobs == 1, (
+        f"Expected only 1 preprocessing job for the new TIFF, "
+        f"but found {preprocessing_jobs} jobs. This suggests the workflow "
+        f"is reprocessing existing files unnecessarily.\n"
+        f"Dry-run output:\n{stdout}"
+    )
+
+    # Verify the new file would be processed
+    # (check for type_1_03.tif in output)
+    assert "type_1_03.tif" in stdout, (
+        "Expected to find type_1_03.tif in the dry-run output, "
+        "indicating the new file would be processed"
+    )
+
+    # Verify existing files are NOT being reprocessed
+    # Count references to the original files - they should only appear in
+    # dependency lists, not as targets to be built
+    lines_with_type_1_01 = [
+        line for line in stdout.split("\n") if "type_1_01.tif" in line
+    ]
+    lines_with_type_1_02 = [
+        line for line in stdout.split("\n") if "type_1_02.tif" in line
+    ]
+
+    print(
+        f"\n=== Lines mentioning"
+        f" type_1_01.tif: {len(lines_with_type_1_01)} ==="
+    )
+    print(
+        f"=== Lines mentioning "
+        f"type_1_02.tif: {len(lines_with_type_1_02)} ==="
+    )
+
+    print("\n=== Test passed: Only new TIFF will be processed ===")

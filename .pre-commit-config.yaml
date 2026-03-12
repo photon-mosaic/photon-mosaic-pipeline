@@ -17,6 +17,10 @@ repos:
             args: [--fix=lf]
           - id: requirements-txt-fixer
           - id: trailing-whitespace
+    - repo: https://github.com/snakemake/snakefmt
+      rev: v0.11.2
+      hooks:
+        - id: snakefmt
     - repo: https://github.com/charliermarsh/ruff-pre-commit
       rev: v0.6.3
       hooks:
