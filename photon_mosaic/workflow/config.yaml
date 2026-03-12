@@ -170,6 +170,14 @@ suite2p_ops:
   neucoeff: 0.7  # Neuropil coefficient
 
 # ============================================================================
+# dF/F Calculation Configuration
+# ============================================================================
+# Controls the dF/F calculation steps
+dff_ops:
+  neucoeff: 0.7  # Neuropil coefficient
+  gmm_ncomponents: 2 # Number of GMM components
+
+# ============================================================================
 # SLURM Configuration
 # ============================================================================
 # Settings for SLURM job scheduling system

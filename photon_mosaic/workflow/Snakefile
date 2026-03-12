@@ -2,14 +2,15 @@
 Photon Mosaic Main Workflow
 
 This is the main Snakefile that orchestrates the entire photon mosaic processing pipeline.
-It handles dataset discovery, target generation, and coordinates the preprocessing and
-suite2p analysis workflows.
+It handles dataset discovery, target generation, and coordinates the preprocessing,
+suite2p analysis, and dF/F calculation workflows.
 
 The workflow:
 1. Discovers datasets and their TIFF files from the raw data directory
 2. Generates preprocessing targets for each dataset/session combination
 3. Generates suite2p analysis targets for processed data
-4. Includes preprocessing.smk and suite2p.smk modules to execute the actual processing
+4. Generates dff calculation targets for processed data
+5. Includes preprocessing.smk, suite2p.smk, dff.smk modules to execute the actual processing
 """
 
 from pathlib import Path
@@ -110,12 +111,34 @@ suite2p_targets = [
 
 log_list_summary(logger, suite2p_targets, "Suite2p targets", preview_count=3)
 
+dff_targets = [
+    str(
+        Path(processed_data_base)
+        / dataset_name
+        / discoverer.get_session_name(i, session_idx)
+        / "funcimg"
+        / "dff"
+        / "plane0"
+        / fname
+    )
+    for i, dataset_name in enumerate(discoverer.transformed_datasets)
+    for session_idx, tiff_list in discoverer.tiff_files[
+        discoverer.original_datasets[i]
+    ].items()
+    for fname in ["dFF.npy"]
+    if tiff_list  # Only create targets for sessions that have files
+]
+
+logger.info(f"dFF calculation targets: {dff_targets}")
+
 
 include: "preprocessing.smk"
 include: "suite2p.smk"
+include: "dff.smk"
 
 
 rule all:
     input:
         preproc_targets,
         suite2p_targets,
+        dff_targets,
