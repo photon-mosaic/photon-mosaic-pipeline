@@ -63,7 +63,6 @@ Other useful arguments you can pass:
 
 - `--latency-wait`: wait time before checking if output files are ready
 - `--rerun-incomplete`: rerun any incomplete jobs
-- `--unlock`: unlock the workflow if it's in a locked state
 
 ## Direct Snakemake Usage
 
