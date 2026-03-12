@@ -14,22 +14,21 @@ The workflow:
 
 from pathlib import Path
 from photon_mosaic.dataset_discovery import DatasetDiscoverer
-from photon_mosaic import log_cuda_availability
 import logging
-
-# Configure logging based on config settings
-log_level = (
-    logging.DEBUG
-    if config.get("logging", {}).get("snakemake_verbose", False)
-    else logging.INFO
+from photon_mosaic.logging_config import (
+    setup_logging,
+    log_section_header,
+    log_subsection,
+    log_list_summary,
 )
-logging.basicConfig(level=log_level)
+
+# Configure logging with centralized setup from photon_mosaic.logging_config
+log_level_str = (
+    "DEBUG" if config.get("logging", {}).get("snakemake_verbose", False) else "INFO"
+)
+
+setup_logging(log_level=log_level_str, use_colors=False)
 logger = logging.getLogger("snakemake.workflow")
-
-
-# CUDA availability check on workflow start
-onstart:
-    log_cuda_availability()
 
 
 raw_data_base = Path(config["raw_data_base"]).resolve()
@@ -37,18 +36,22 @@ processed_data_base = Path(config["processed_data_base"]).resolve()
 slurm_config = config.get("slurm", {})
 output_pattern = config["preprocessing"]["output_pattern"]
 
+log_section_header(logger, "Configuration")
 logger.info(f"Raw data base: {raw_data_base}")
 logger.info(f"Processed data base: {processed_data_base}")
 
 # Log SLURM configuration
 use_slurm = config.get("use_slurm", False)
 if use_slurm:
-    logger.info("SLURM execution enabled")
-    logger.info(f"SLURM configuration: {slurm_config}")
+    log_section_header(logger, "SLURM Configuration")
+    logger.info("SLURM execution: ENABLED")
+    logger.info(f"Configuration: {slurm_config}")
 else:
-    logger.info("SLURM execution disabled - running locally")
+    log_section_header(logger, "Execution Mode")
+    logger.info("SLURM execution: DISABLED (running locally)")
 
 # Discover datasets and their TIFF files using the new class-based approach
+log_section_header(logger, "Dataset Discovery")
 discoverer = DatasetDiscoverer(
     base_path=raw_data_base,
     pattern=config["dataset_discovery"].get("pattern", ".*"),
@@ -62,8 +65,13 @@ discoverer = DatasetDiscoverer(
 
 discoverer.discover()
 
-logger.info(f"Discovered datasets: {discoverer.transformed_datasets}")
-logger.info(f"TIFF files: {discoverer.tiff_files}")
+logger.info(
+    f"Discovered {len(discoverer.transformed_datasets)} dataset(s): {discoverer.transformed_datasets}"
+)
+total_tiffs = sum(len(sessions) for sessions in discoverer.tiff_files.values())
+logger.info(f"Found {total_tiffs} session(s) with TIFF files")
+
+log_section_header(logger, "Generating Targets")
 
 preproc_targets = [
     str(
@@ -80,7 +88,7 @@ preproc_targets = [
     for tiff_name in tiff_list
 ]
 
-logger.info(f"Preprocessing targets: {preproc_targets}")
+log_list_summary(logger, preproc_targets, "Preprocessing targets", preview_count=5)
 
 suite2p_targets = [
     str(
@@ -100,7 +108,7 @@ suite2p_targets = [
     if tiff_list  # Only create targets for sessions that have files
 ]
 
-logger.info(f"Suite2p targets: {suite2p_targets}")
+log_list_summary(logger, suite2p_targets, "Suite2p targets", preview_count=3)
 
 
 include: "preprocessing.smk"

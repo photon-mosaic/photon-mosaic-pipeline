@@ -82,6 +82,10 @@ rule preprocessing:
         **(slurm_config if config.get("use_slurm") else {}),
     run:
         from photon_mosaic.rules.preprocessing import run_preprocessing
+        from photon_mosaic import log_cuda_availability
+
+        # Check CUDA availability for this job
+        log_cuda_availability()
 
         run_preprocessing(
             Path(params.output_folder),

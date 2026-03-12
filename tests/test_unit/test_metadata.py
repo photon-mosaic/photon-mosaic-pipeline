@@ -7,33 +7,11 @@ for both custom metadata and NeuroBlueprint formats.
 
 import re
 import shutil
-import subprocess
 from pathlib import Path
 
 import yaml
 
 from photon_mosaic.dataset_discovery import DatasetDiscoverer
-
-
-def run_photon_mosaic(workdir, configfile, timeout=None):
-    """Helper function to run photon-mosaic CLI with dry-run.
-
-    timeout: seconds to wait for the subprocess to complete. If None,
-    wait indefinitely (no timeout).
-    """
-    cmd = [
-        "photon-mosaic",
-        "--config",
-        str(configfile),
-        "--log-level",
-        "DEBUG",
-    ]
-
-    result = subprocess.run(
-        cmd, cwd=workdir, capture_output=True, text=True, timeout=timeout
-    )
-
-    return result
 
 
 class TestMetadataFunctionality:
@@ -162,12 +140,12 @@ class TestMetadataFunctionality:
 
     def test_neuroblueprint_format_validation(self):
         """Test NeuroBlueprint format validation."""
-        # Valid NeuroBlueprint subject names
+        # Valid NeuroBlueprint subject names (numeric IDs only)
         valid_subjects = [
             "sub-001",
             "sub-001_strain-C57BL6",
             "sub-001_strain-C57BL6_sex-M",
-            "sub-mouse123_genotype-WT_age-P60",
+            "sub-123_genotype-WT_age-P60",
         ]
 
         for name in valid_subjects:
@@ -175,12 +153,12 @@ class TestMetadataFunctionality:
                 name, "sub"
             ), f"{name} should be valid"
 
-        # Valid NeuroBlueprint session names
+        # Valid NeuroBlueprint session names (numeric IDs only)
         valid_sessions = [
             "ses-001",
             "ses-001_date-20250225",
             "ses-001_date-20250225_protocol-training",
-            "ses-baseline_condition-control_paradigm-open-field",
+            "ses-999_condition-control_paradigm-openfield",
         ]
 
         for name in valid_sessions:
@@ -195,6 +173,10 @@ class TestMetadataFunctionality:
             "sub-",  # No identifier
             "sub-001_invalid",  # Missing value after key
             "sub-001_-value",  # Missing key before value
+            "sub-mouse123_genotype-WT_age-P60",  # Alphanumeric ID not allowed
+            "ses-baseline_condition-control",  # Alphanumeric ID not allowed
+            "ses-task001",  # Alphanumeric ID not allowed
+            "ses-001task",  # Alphanumeric ID not allowed
         ]
 
         for name in invalid_names:
@@ -202,7 +184,9 @@ class TestMetadataFunctionality:
                 name, "sub"
             ), f"{name} should be invalid"
 
-    def test_photon_mosaic_cli_custom_metadata(self, custom_metadata_env):
+    def test_photon_mosaic_cli_custom_metadata(
+        self, custom_metadata_env, run_photon_mosaic
+    ):
         """Test photon-mosaic CLI with custom metadata format."""
         # Run photon-mosaic with dry-run to test metadata processing
         result = run_photon_mosaic(
@@ -225,7 +209,7 @@ class TestMetadataFunctionality:
         ), "Pipeline should complete successfully"
 
     def test_photon_mosaic_cli_neuroblueprint_metadata(
-        self, neuroblueprint_env
+        self, neuroblueprint_env, run_photon_mosaic
     ):
         """Test photon-mosaic CLI with NeuroBlueprint metadata format."""
         # Run photon-mosaic with dry-run to test metadata processing
@@ -249,7 +233,7 @@ class TestMetadataFunctionality:
         ), "Pipeline should complete successfully with NeuroBlueprint format"
 
     def test_noncontinuous_ids_preservation(
-        self, neuroblueprint_noncontinuous_env
+        self, neuroblueprint_noncontinuous_env, run_photon_mosaic
     ):
         """Test that non-continuous subject and session IDs are preserved."""
         # local variables use module-level imports: re, Path
@@ -339,7 +323,7 @@ class TestMetadataFunctionality:
                 )
 
     def test_alphanumeric_subject_and_session_ids(
-        self, tmp_path, metadata_base_config
+        self, tmp_path, metadata_base_config, run_photon_mosaic
     ):
         """Test that alphanumeric folder names are preserved in transformed
         names.
