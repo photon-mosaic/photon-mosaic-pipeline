@@ -75,7 +75,11 @@ rule suite2p:
         **(slurm_config if config.get("use_slurm") else {}),
     run:
         from photon_mosaic.rules.suite2p_run import run_suite2p
+        from photon_mosaic import log_cuda_availability
         from pathlib import Path
+
+        # Check CUDA availability for this job
+        log_cuda_availability()
 
         # Ensure all paths are properly resolved
         input_paths = [Path(tiff).resolve() for tiff in input.tiffs]

@@ -5,6 +5,8 @@ This module provides common fixtures used across both unit and integration
 tests, following the DRY principle to avoid duplication.
 """
 
+import argparse
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -13,6 +15,37 @@ import yaml
 
 from tests.test_data_factory import DataFactory
 from tests.tree_helpers import tree as tree_lines
+
+
+@pytest.fixture
+def run_photon_mosaic():
+    def inner_run_photon_mosaic(workdir, configfile, timeout=None):
+        """Helper function to run photon-mosaic CLI with dry-run.
+
+        timeout: seconds to wait for the subprocess to complete. If None,
+        wait indefinitely (no timeout).
+        """
+        cmd = [
+            "photon-mosaic",
+            "--config",
+            str(configfile),
+            "--log-level",
+            "DEBUG",
+        ]
+
+        result = subprocess.run(
+            cmd,
+            cwd=workdir,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            encoding="utf-8",
+            errors="replace",
+        )
+
+        return result
+
+    return inner_run_photon_mosaic
 
 
 @pytest.fixture
@@ -62,21 +95,21 @@ def metadata_base_config():
 
 
 @pytest.fixture
-def map_of_tiffs():
+def cli_args(snake_test_env):
     """
-    Create a map of tiffs in test data using rglob -
-    for backward compatibility with unit tests that use static data.
-    For integration tests, use the map_of_tiffs from snake_test_env instead.
+    Create a standard argparse.Namespace for CLI testing.
     """
+    configfile = snake_test_env["configfile"]
 
-    photon_mosaic_path = Path(__file__).parent / "data"
-    map_of_tiffs = {}
-    for dataset in photon_mosaic_path.glob("*"):
-        if dataset.is_dir():
-            # Get just the filenames, not the full paths
-            tiff_files = [f.name for f in dataset.rglob("*.tif")]
-            map_of_tiffs[dataset.name] = tiff_files
-    return map_of_tiffs
+    return argparse.Namespace(
+        config=str(configfile),
+        jobs="1",
+        dry_run=False,
+        forcerun=None,
+        rerun_incomplete=False,
+        latency_wait=10,
+        verbose=False,
+    )
 
 
 def create_map_of_tiffs(raw_data_path: Path) -> dict:
