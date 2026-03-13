@@ -22,9 +22,6 @@ import re
 import logging
 import os
 
-# Configure SLURM resources if enabled
-slurm_config = config.get("slurm", {}) if config.get("use_slurm") else {}
-
 
 # Preprocessing rule
 rule preprocessing:
@@ -67,7 +64,7 @@ rule preprocessing:
             wildcards.session_name
         ),
     wildcard_constraints:
-        tiff=("|".join(sorted([Path(f).name for f in discoverer.tiff_files_flat]))),
+        tiff=("|".join(sorted([Path(f).name for f in all_selected_tiff_paths]))),
         subject_name="|".join(discoverer.transformed_datasets),
         session_name="|".join(
             [

@@ -13,13 +13,19 @@ The workflow:
 """
 
 from pathlib import Path
-from photon_mosaic.dataset_discovery import DatasetDiscoverer
+
+# from photon_mosaic.dataset_discovery import DatasetDiscoverer
 import logging
 from photon_mosaic.logging_config import (
     setup_logging,
     log_section_header,
     log_subsection,
     log_list_summary,
+)
+from photon_mosaic.path_selection import (
+    find_raw_data_paths,
+    adapt_paths_to_output_pattern,
+    set_up_suite2p_targets,
 )
 
 # Configure logging with centralized setup from photon_mosaic.logging_config
@@ -31,16 +37,13 @@ setup_logging(log_level=log_level_str, use_colors=False)
 logger = logging.getLogger("snakemake.workflow")
 
 
-raw_data_base = Path(config["raw_data_base"]).resolve()
-processed_data_base = Path(config["processed_data_base"]).resolve()
-slurm_config = config.get("slurm", {})
-output_pattern = config["preprocessing"]["output_pattern"]
+base_path = Path(config["base_path"]).resolve()
 
 log_section_header(logger, "Configuration")
-logger.info(f"Raw data base: {raw_data_base}")
-logger.info(f"Processed data base: {processed_data_base}")
+logger.info(f"Raw data base: {base_path}")
 
 # Log SLURM configuration
+slurm_config = config.get("slurm", {}) if config.get("use_slurm") else {}
 use_slurm = config.get("use_slurm", False)
 if use_slurm:
     log_section_header(logger, "SLURM Configuration")
@@ -50,63 +53,76 @@ else:
     log_section_header(logger, "Execution Mode")
     logger.info("SLURM execution: DISABLED (running locally)")
 
+
 # Discover datasets and their TIFF files using the new class-based approach
 log_section_header(logger, "Dataset Discovery")
-discoverer = DatasetDiscoverer(
-    base_path=raw_data_base,
-    pattern=config["dataset_discovery"].get("pattern", ".*"),
-    exclude_datasets=config["dataset_discovery"].get("exclude_datasets"),
-    exclude_sessions=config["dataset_discovery"].get("exclude_sessions"),
-    tiff_patterns=config["dataset_discovery"].get("tiff_patterns"),
-    neuroblueprint_format=config["dataset_discovery"].get(
-        "neuroblueprint_format", False
-    ),
-)
+# discoverer = DatasetDiscoverer(
+#     base_path=raw_data_base,
+#     pattern=config["dataset_discovery"].get("pattern", ".*"),
+#     exclude_datasets=config["dataset_discovery"].get("exclude_datasets"),
+#     exclude_sessions=config["dataset_discovery"].get("exclude_sessions"),
+#     tiff_patterns=config["dataset_discovery"].get("tiff_patterns"),
+#     # neuroblueprint_format=config["dataset_discovery"].get(
+#     #     "neuroblueprint_format", False
+#     # ),
+# )
 
-discoverer.discover()
+all_selected_tiff_paths = find_raw_data_paths(base_path)
 
-logger.info(
-    f"Discovered {len(discoverer.transformed_datasets)} dataset(s): {discoverer.transformed_datasets}"
-)
-total_tiffs = sum(len(sessions) for sessions in discoverer.tiff_files.values())
-logger.info(f"Found {total_tiffs} session(s) with TIFF files")
+# discoverer.discover()
+
+# logger.info(
+#     f"Discovered {len(discoverer.transformed_datasets)} dataset(s): {discoverer.transformed_datasets}"
+# )
+# total_tiffs = sum(len(sessions) for sessions in discoverer.tiff_files.values())
+# logger.info(f"Found {total_tiffs} session(s) with TIFF files")
 
 log_section_header(logger, "Generating Targets")
 
-preproc_targets = [
-    str(
-        Path(processed_data_base)
-        / dataset_name
-        / discoverer.get_session_name(i, session_idx)
-        / "funcimg"
-        / f"{output_pattern}{Path(tiff_name).name}"
-    )
-    for i, dataset_name in enumerate(discoverer.transformed_datasets)
-    for session_idx, tiff_list in discoverer.tiff_files[
-        discoverer.original_datasets[i]
-    ].items()
-    for tiff_name in tiff_list
-]
+# ========
+# Set up target for rule all
+
+# Preprocessing targets
+output_pattern = config["preprocessing"]["output_pattern"]
+preproc_targets = adapt_paths_to_output_pattern(all_selected_tiff_paths, output_pattern)
+
+# preproc_targets = [
+#     str(
+#         Path(processed_data_base)
+#         / dataset_name
+#         / discoverer.get_session_name(i, session_idx)
+#         / "funcimg"
+#         / f"{output_pattern}{Path(tiff_name).name}"
+#     )
+#     for i, dataset_name in enumerate(discoverer.transformed_datasets)
+#     for session_idx, tiff_list in discoverer.tiff_files[
+#         discoverer.original_datasets[i]
+#     ].items()
+#     for tiff_name in tiff_list
+# ]
 
 log_list_summary(logger, preproc_targets, "Preprocessing targets", preview_count=5)
 
-suite2p_targets = [
-    str(
-        Path(processed_data_base)
-        / dataset_name
-        / discoverer.get_session_name(i, session_idx)
-        / "funcimg"
-        / "suite2p"
-        / "plane0"
-        / fname
-    )
-    for i, dataset_name in enumerate(discoverer.transformed_datasets)
-    for session_idx, tiff_list in discoverer.tiff_files[
-        discoverer.original_datasets[i]
-    ].items()
-    for fname in ["F.npy", "data.bin"]
-    if tiff_list  # Only create targets for sessions that have files
-]
+
+suite2p_targets = set_up_suite2p_targets(preproc_targets)
+# Suite2p targets
+# suite2p_targets = [
+#     str(
+#         Path(processed_data_base)
+#         / dataset_name
+#         / discoverer.get_session_name(i, session_idx)
+#         / "funcimg"
+#         / "suite2p"
+#         / "plane0"
+#         / fname
+#     )
+#     for i, dataset_name in enumerate(discoverer.transformed_datasets)
+#     for session_idx, tiff_list in discoverer.tiff_files[
+#         discoverer.original_datasets[i]
+#     ].items()
+#     for fname in ["F.npy", "data.bin"]
+#     if tiff_list  # Only create targets for sessions that have files
+# ]
 
 log_list_summary(logger, suite2p_targets, "Suite2p targets", preview_count=3)
 

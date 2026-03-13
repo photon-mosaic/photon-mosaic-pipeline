@@ -2,8 +2,7 @@
 # Data Paths Configuration
 # ============================================================================
 # Base directories for raw and processed data
-raw_data_base: "path/to/raw/data/"
-processed_data_base: "path/to/processed/data/"
+base_path: /path/to/base/folder/
 
 # ============================================================================
 # Dataset Discovery Configuration

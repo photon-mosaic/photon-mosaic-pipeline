@@ -255,7 +255,7 @@ class DataFactory:
         if tiff_files is None:
             tiff_files = ["recording.tif"]
 
-        raw_data = tmp_path / "raw_data"
+        raw_data = tmp_path / "rawdata"
 
         for i, subject_meta in enumerate(subjects):
             # Create NeuroBlueprint subject folder name
@@ -291,9 +291,16 @@ class DataFactory:
                 session_path = subject_path / session_name
                 session_path.mkdir(parents=True, exist_ok=True)
 
+                Path(session_path / "funcimg").mkdir(
+                    parents=True, exist_ok=True
+                )
+
                 # Copy TIFF files
                 for tiff_name in tiff_files:
-                    shutil.copy2(self.base_tiff_path, session_path / tiff_name)
+                    shutil.copy2(
+                        self.base_tiff_path,
+                        session_path / "funcimg" / tiff_name,
+                    )
 
         return raw_data
 
