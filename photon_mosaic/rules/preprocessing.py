@@ -26,8 +26,8 @@ def run_preprocessing(
     ses_idx : int, optional
         Session index to process. Default is 0.
     tiff_name : str, optional
-        Name of the TIFF file to process. Required for 'noop' and 'contrast'
-        preprocessing steps.
+        Name of the TIFF file to process. Required for 'noop', 'contrast',
+        and 'stiminterpolation' preprocessing steps.
 
     Returns
     -------

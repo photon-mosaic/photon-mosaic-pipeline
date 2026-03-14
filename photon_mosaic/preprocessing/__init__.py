@@ -9,4 +9,4 @@ from . import contrast
 from . import derotation
 from . import noop
 
-__all__ = ["contrast", "derotation", "noop"]
+__all__ = ["contrast", "derotation", "noop", "stiminterpolation"]
