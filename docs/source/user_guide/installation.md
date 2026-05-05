@@ -1,5 +1,5 @@
 (user_guide/installation)=
-## Installation
+# Installation
 
 ```{include} ../../../README.md
 :start-after: '## Installation'

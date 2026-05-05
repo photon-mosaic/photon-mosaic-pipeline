@@ -43,3 +43,13 @@ How to organise raw data in NeuroBlueprint format and filter which TIFFs the pip
 :::
 
 ::::
+
+```{toctree}
+:hidden:
+
+installation
+configuration
+snakemake_tutorial
+preprocessing
+dataset_discovery
+```
