@@ -510,9 +510,10 @@ def main():
 
     On each invocation, the pipeline will:
 
-    1. Create a timestamped config file in derivatives/photon-mosaic/configs/
-    2. Save execution logs in derivatives/photon-mosaic/logs/
-    3. Process all TIFF files found under rawdata/sub-*/ses-*/funcimg/
+    1. Create a timestamped config file in
+       ``derivatives/photon-mosaic/configs/``
+    2. Save execution logs in ``derivatives/photon-mosaic/logs/``
+    3. Process all TIFF files found under ``rawdata/sub-*/ses-*/funcimg/``
     4. Generate standardized outputs following NeuroBlueprint specification
     """
     # Parse command line arguments

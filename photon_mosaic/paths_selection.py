@@ -25,7 +25,7 @@ def find_raw_data_paths(
     ----------
     project_path : Path
         Root of the project, expected to follow NeuroBlueprint format
-        (i.e. contains a rawdata/sub-*/ses-*/funcimg/ structure).
+        (i.e. contains a ``rawdata/sub-*/ses-*/funcimg/`` structure).
     tiff_patterns : list[str]
         Glob patterns for TIFF files to include (e.g. ``["*_00001.tif"]``).
     exclude_datasets : list[str] | None
