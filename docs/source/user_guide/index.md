@@ -51,5 +51,5 @@ installation
 configuration
 snakemake_tutorial
 preprocessing
-dataset_discovery
+data_input
 ```

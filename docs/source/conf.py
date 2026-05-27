@@ -76,6 +76,10 @@ templates_path = ["_templates"]
 # Automatically generate stub pages for API
 autosummary_generate = True
 numpydoc_class_members_toctree = False  # stops stubs warning
+# Don't enumerate inherited members in each class' Attributes/Methods summary.
+# Otherwise numpydoc lists ``logging.Formatter.converter`` (== ``time.localtime``)
+# on ``ColoredFormatter``, which autodoc cannot introspect (spurious warning).
+numpydoc_show_inherited_class_members = False
 #toc_object_entries_show_parents = "all"
 html_show_sourcelink = False
 
