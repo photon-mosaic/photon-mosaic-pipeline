@@ -108,6 +108,13 @@ exclude_patterns = [
 html_theme = "pydata_sphinx_theme"
 html_title = "photon-mosaic"
 
+# Hide primary sidebar in user and contributing guides
+html_sidebars = {
+    "**": ["sidebar-collapse", "sidebar-nav-bs"],
+    "user_guide/index": [],
+    "contributing": [],
+}
+
 # Customize the theme
 html_theme_options = {
     "icon_links": [
