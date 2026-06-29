@@ -301,6 +301,11 @@ def build_snakemake_command(args, config_path):
         # Default to quiet mode unless --verbose is specified
         cmd.append("--quiet")
 
+    if os.getenv("CI"):
+        cmd.append("--nolock")
+        cmd.append("--latency-wait")
+        cmd.append("30")
+
     return cmd
 
 

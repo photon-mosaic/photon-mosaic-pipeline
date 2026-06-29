@@ -1,3 +1,4 @@
+import os
 import subprocess
 from pathlib import Path
 
@@ -26,6 +27,11 @@ def run_snakemake(workdir, configfile, dry_run=False):
         cmd.insert(1, "--dry-run")
 
     print(" ".join(cmd))
+
+    if os.getenv("CI"):
+        cmd.append("--nolock")
+        cmd.append("--latency-wait")
+        cmd.append("30")
 
     result = subprocess.run(
         cmd,
