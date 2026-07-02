@@ -35,11 +35,21 @@ Basic Snakemake tutorial to get you started.
 Learn about the preprocessing steps available in photon-mosaic.
 :::
 
-:::{grid-item-card} 🔍 Dataset Discovery
-:link: dataset_discovery
+:::{grid-item-card} 🗂️ Data input
+:link: data_input
 :link-type: doc
 
-Learn how to use the flexible dataset discovery system to find and process your datasets.
+How to organise raw data in NeuroBlueprint format and filter which TIFFs the pipeline processes.
 :::
 
 ::::
+
+```{toctree}
+:hidden:
+
+installation
+configuration
+snakemake_tutorial
+preprocessing
+data_input
+```

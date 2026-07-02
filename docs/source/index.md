@@ -5,11 +5,6 @@
 :end-before: '## Installation'
 ```
 
-```{include} ../../README.md
-:start-after: '&nbsp;'
-:end-before: '## Installation'
-```
-
 ```{toctree}
 :maxdepth: 2
 :hidden:

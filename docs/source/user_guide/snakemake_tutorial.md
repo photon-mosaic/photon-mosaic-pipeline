@@ -3,7 +3,7 @@
 
 With `photon-mosaic`, you can run a Snakemake workflow that automatically executes the necessary steps to process your data. The workflow is included in the installed package and can be customized using a YAML configuration file.
 
-The pipeline searches for dataset folders in the specified path and looks for TIFF files in each of them. Each dataset will be processed in parallel, and the results will be saved in a standardized output folder structure under `derivatives`.
+The pipeline expects a [NeuroBlueprint](https://neuroblueprint.neuroinformatics.dev/)-compliant project at `--project_path`, with raw TIFFs under `rawdata/sub-*/ses-*/funcimg/`. Each `(subject, session)` is processed in parallel, and results are written to a mirrored layout under `derivatives/`. See the [data input documentation](data_input.md) for the required structure.
 
 ## Why use Snakemake?
 
@@ -26,10 +26,10 @@ photon-mosaic --dry-run
 
 ## Running the Workflow
 
-On the first run, you need to specify the paths to the raw and processed data:
+On the first run, you need to point the pipeline at your NeuroBlueprint project:
 
 ```bash
-photon-mosaic --raw_data_base /path/to/raw --processed_data_base /path/to/processed
+photon-mosaic --project_path /path/to/project
 ```
 For more details, see the [configuration documentation](configuration.md).
 
@@ -49,10 +49,10 @@ To force the re-execution of a specific rule:
 photon-mosaic --forcerun suite2p
 ```
 
-To reprocess a specific dataset, you can specify a target output file (e.g., `F.npy`):
+To reprocess a specific session, you can specify a target output file (e.g., `F.npy`) from the derivatives tree:
 
 ```bash
-photon-mosaic /path/to/derivatives/dataset_name/suite2p/plane_0/F.npy
+photon-mosaic /path/to/derivatives/sub-001/ses-001/funcimg/suite2p/plane0/F.npy
 ```
 
 To run the workflow on a cluster, check instructions in the [configuration documentation](configuration.md).

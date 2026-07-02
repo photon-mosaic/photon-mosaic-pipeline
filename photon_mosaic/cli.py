@@ -301,6 +301,11 @@ def build_snakemake_command(args, config_path):
         # Default to quiet mode unless --verbose is specified
         cmd.append("--quiet")
 
+    if os.getenv("CI"):
+        cmd.append("--nolock")
+        cmd.append("--latency-wait")
+        cmd.append("30")
+
     return cmd
 
 
@@ -479,8 +484,11 @@ def main():
     store their data on servers connected to HPC clusters and want to
     batch-process multiple imaging sessions in parallel.
 
-    Command Line Arguments
-    ---------------------
+    Notes
+    -----
+    The pipeline is invoked via the ``photon-mosaic`` CLI. The supported
+    command-line arguments are:
+
     --config : str, optional
         Path to your config.yaml file. If not provided, uses
         ~/.photon_mosaic/config.yaml.
@@ -505,12 +513,12 @@ def main():
     extra : list
         Additional arguments to pass to snakemake.
 
-    Notes
-    -----
-    The pipeline will:
-    1. Create a timestamped config file in derivatives/photon-mosaic/configs/
-    2. Save execution logs in derivatives/photon-mosaic/logs/
-    3. Process all TIFF files found under rawdata/sub-*/ses-*/funcimg/
+    On each invocation, the pipeline will:
+
+    1. Create a timestamped config file in
+       ``derivatives/photon-mosaic/configs/``
+    2. Save execution logs in ``derivatives/photon-mosaic/logs/``
+    3. Process all TIFF files found under ``rawdata/sub-*/ses-*/funcimg/``
     4. Generate standardized outputs following NeuroBlueprint specification
     """
     # Parse command line arguments

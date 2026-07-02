@@ -28,13 +28,20 @@ dataset_discovery:
 preprocessing:
   # Output file naming pattern for preprocessed files
   # Use a suffix relevant for the set of operations you want to perform
-  output_pattern: "" # "" for noop, "enhanced_" for contrast and "derotated_" for derotation
+  output_pattern: "" # "" for noop, "enhanced_" for contrast, "derotated_" for derotation, and "stiminterpolated_" for stiminterpolation
 
   # Define preprocessing steps and their parameters
   # They are mutually exclusive
   steps:
     # No operation, just copy the files
     - name: noop
+
+    # Photostimulation-artefact removal by interpolation
+    # - name: stiminterpolation
+    #   kwargs:
+    #     # Path to the stimulation TTL HDF5 file
+    #     path_to_stim_h5: "path/to/stimulus_ttl.h5"
+    #     save_metadata: true # Whether to save ScanImage metadata as a JSON file
 
     # Derotation
     # - name: derotation

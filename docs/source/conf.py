@@ -76,6 +76,10 @@ templates_path = ["_templates"]
 # Automatically generate stub pages for API
 autosummary_generate = True
 numpydoc_class_members_toctree = False  # stops stubs warning
+# Don't enumerate inherited members in each class' Attributes/Methods summary.
+# Otherwise numpydoc lists ``logging.Formatter.converter`` (== ``time.localtime``)
+# on ``ColoredFormatter``, which autodoc cannot introspect (spurious warning).
+numpydoc_show_inherited_class_members = False
 #toc_object_entries_show_parents = "all"
 html_show_sourcelink = False
 
@@ -103,6 +107,13 @@ exclude_patterns = [
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 html_theme = "pydata_sphinx_theme"
 html_title = "photon-mosaic"
+
+# Hide primary sidebar in user and contributing guides
+html_sidebars = {
+    "**": ["sidebar-collapse", "sidebar-nav-bs"],
+    "user_guide/index": [],
+    "contributing": [],
+}
 
 # Customize the theme
 html_theme_options = {

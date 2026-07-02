@@ -8,14 +8,17 @@ The configuration system in `photon-mosaic` is designed to be flexible and user-
 ### User Configuration
 On first run, photon-mosaic will create a user config at `~/.photon_mosaic/config.yaml` if it does not exist. This serves as your default configuration.
 
-The default config expects you to run the pipeline in the directory that contains the raw data and will create a `derivatives` directory its root directory, following `NeuroBlueprint` conventions. It is advised to specify the paths for the raw and processed data using the `raw_data_base` and `processed_data_base` parameters on the first run via the command line:
+`photon-mosaic` expects you to organise your data in a project directory that follows the [NeuroBlueprint](https://neuroblueprint.neuroinformatics.dev/) specification. Raw data lives under `<project_path>/rawdata/`, and derivatives are written next to it under `<project_path>/derivatives/`. See the [data input documentation](data_input.md) for the required directory layout.
+
+You set the project directory with `--project_path` on the first run:
 
 ```bash
-photon-mosaic --raw_data_base /my/raw_data --processed_data_base /my/derivatives
+photon-mosaic --project_path /my/project
 ```
-After the first run, you can edit the config file to your liking by manually opening the file and editing it or using command line arguments. You will be able to run photon-mosaic without specifying the paths again, by just running `photon-mosaic`.
 
-In case you want to reset the config to the default values, you can run `photon-mosaic --reset-config`. You can also specify the paths to raw and derivative again with the appropriate flags.
+After the first run, the path is stored in `~/.photon_mosaic/config.yaml` and you can simply run `photon-mosaic`.
+
+In case you want to reset the config to the default values, you can run `photon-mosaic --reset-config`. You can also specify `--project_path` again on subsequent runs to override what is stored in the config.
 
 If you want to store your config file somewhere else, you can specify the path to the config file with the `--config` flag.
 
@@ -26,18 +29,15 @@ The config file that is used for each run (with any overrides) is exported to `d
 The configuration file is organized into several main sections. Here is a simplified example showing the key sections:
 
 ```yaml
-# Data paths
-raw_data_base: "path/to/raw_data/"
-processed_data_base: "path/to/derivatives/"
+# Project path (must follow NeuroBlueprint: rawdata/sub-*/ses-*/funcimg/)
+project_path: "/path/to/project/"
 
-# Dataset discovery settings
+# Filters applied to the NeuroBlueprint tree
 dataset_discovery:
-  pattern: "^.*$"
   tiff_patterns: ["*.tif"]
-    exclude_datasets:
-      - ".*_test$"
-      - ".*_backup$"
-    exclude_sessions: []
+  exclude_datasets:
+    - "sub-test.*"
+  exclude_sessions: []
 
 # Preprocessing configuration
 preprocessing:
@@ -76,10 +76,7 @@ slurm:
 
 For the complete configuration file with all available parameters and detailed comments, see [photon_mosaic/workflow/config.yaml](https://github.com/neuroinformatics-unit/photon-mosaic/blob/main/photon_mosaic/workflow/config.yaml) or the YAML file in `~/.photon_mosaic/config.yaml` generated on first run.
 
-## Key Configuration Notes
-
-### Dataset Discovery
-See the [dataset discovery documentation](dataset_discovery.md) for detailed information about configuring dataset discovery.
+## Further Configuration Notes
 
 ### Preprocessing
 See the [preprocessing documentation](preprocessing.md) for step-specific configuration
