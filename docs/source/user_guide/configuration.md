@@ -6,23 +6,23 @@ The configuration system in `photon-mosaic-pipeline` is designed to be flexible 
 ## Configuration Files
 
 ### User Configuration
-On first run, `photon-mosaic-pipeline` will create a user config at `~/.photon_mosaic/config.yaml` if it does not exist. This serves as your default configuration.
+On first run, `photon-mosaic-pipeline` will create a user config at `~/.photon_mosaic_pipeline/config.yaml` if it does not exist. This serves as your default configuration.
 
 `photon-mosaic-pipeline` expects you to organise your data in a project directory that follows the [NeuroBlueprint](https://neuroblueprint.neuroinformatics.dev/) specification. Raw data lives under `<project_path>/rawdata/`, and derivatives are written next to it under `<project_path>/derivatives/`. See the [data input documentation](data_input.md) for the required directory layout.
 
 You set the project directory with `--project_path` on the first run:
 
 ```bash
-photon-mosaic --project_path /my/project
+photon-mosaic-pipeline --project_path /my/project
 ```
 
-After the first run, the path is stored in `~/.photon_mosaic/config.yaml` and you can simply run `photon-mosaic`.
+After the first run, the path is stored in `~/.photon_mosaic_pipeline/config.yaml` and you can simply run `photon-mosaic-pipeline`.
 
-In case you want to reset the config to the default values, you can run `photon-mosaic --reset-config`. You can also specify `--project_path` again on subsequent runs to override what is stored in the config.
+In case you want to reset the config to the default values, you can run `photon-mosaic-pipeline --reset-config`. You can also specify `--project_path` again on subsequent runs to override what is stored in the config.
 
 If you want to store your config file somewhere else, you can specify the path to the config file with the `--config` flag.
 
-The config file that is used for each run (with any overrides) is exported to `derivatives/photon-mosaic/configs/YYYYMMDD_HHMMSS_config.yaml`.
+The config file that is used for each run (with any overrides) is exported to `derivatives/photon-mosaic-pipeline/configs/YYYYMMDD_HHMMSS_config.yaml`.
 
 ## Configuration Structure
 
@@ -74,7 +74,7 @@ slurm:
   nodes: 1
 ```
 
-For the complete configuration file with all available parameters and detailed comments, see [photon_mosaic/workflow/config.yaml](https://github.com/photon-mosaic/photon-mosaic-pipeline/blob/main/photon_mosaic/workflow/config.yaml) or the YAML file in `~/.photon_mosaic/config.yaml` generated on first run.
+For the complete configuration file with all available parameters and detailed comments, see [photon_mosaic/workflow/config.yaml](https://github.com/photon-mosaic/photon-mosaic-pipeline/blob/main/photon_mosaic/workflow/config.yaml) or the YAML file in `~/.photon_mosaic_pipeline/config.yaml` generated on first run.
 
 ## Further Configuration Notes
 
@@ -119,7 +119,7 @@ Photon-mosaic uses Cellpose 4 by default, with `cpsam` model. If you want to use
 - `tasks`: Number of parallel tasks
 - `nodes`: Number of compute nodes
 
-In order for SLURM jobs to be executed, you have to launch `photon-mosaic` inside an environment in an interactive job in your cluster.
+In order for SLURM jobs to be executed, you have to launch `photon-mosaic-pipeline` inside an environment in an interactive job in your cluster.
 
 #### GPU resources: `gpu` vs `gres`
 

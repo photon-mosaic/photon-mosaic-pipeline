@@ -11,7 +11,7 @@ Snakemake is a powerful workflow management system that allows you to run comple
 
 This approach lets you rerun only the parts of the workflow that need to be updated, avoiding the need to repeat the entire analysis each time.
 
-Here we show examples that do not call directly the `snakemake` command, but instead use the `photon-mosaic` CLI, which is a wrapper around Snakemake that simplifies the execution of the workflow.
+Here we show examples that do not call directly the `snakemake` command, but instead use the `photon-mosaic-pipeline` CLI, which is a wrapper around Snakemake that simplifies the execution of the workflow.
 
 ## Dry Run
 A dry run is a simulation that shows what would happen if the workflow were executed, without actually running any commands. This is useful for verifying that everything is set up correctly. The output includes a DAG (directed acyclic graph) showing dependencies between rules, which files will be created, and which rules will be executed.
@@ -19,7 +19,7 @@ A dry run is a simulation that shows what would happen if the workflow were exec
 To preview the workflow without running it:
 
 ```bash
-photon-mosaic --dry-run
+photon-mosaic-pipeline --dry-run
 ```
 
 `--jobs` specifies the number of jobs to run in parallel. You can increase this number to parallelize execution across datasets. A dry run can also be abbreviated to `-np` if using Snakemake directly.
@@ -29,30 +29,30 @@ photon-mosaic --dry-run
 On the first run, you need to point the pipeline at your NeuroBlueprint project:
 
 ```bash
-photon-mosaic --project_path /path/to/project
+photon-mosaic-pipeline --project_path /path/to/project
 ```
 For more details, see the [configuration documentation](configuration.md).
 
 To run the full workflow after the first run, you can simply run:
 
 ```bash
-photon-mosaic
+photon-mosaic-pipeline
 ```
 You can also specify how many jobs you want to run in parallel with the `--jobs` flag.
 ```bash
-photon-mosaic --jobs 5
+photon-mosaic-pipeline --jobs 5
 ```
 
 To force the re-execution of a specific rule:
 
 ```bash
-photon-mosaic --forcerun suite2p
+photon-mosaic-pipeline --forcerun suite2p
 ```
 
 To reprocess a specific session, you can specify a target output file (e.g., `F.npy`) from the derivatives tree:
 
 ```bash
-photon-mosaic /path/to/derivatives/sub-001/ses-001/funcimg/suite2p/plane0/F.npy
+photon-mosaic-pipeline /path/to/derivatives/sub-001/ses-001/funcimg/suite2p/plane0/F.npy
 ```
 
 To run the workflow on a cluster, check instructions in the [configuration documentation](configuration.md).
@@ -74,4 +74,4 @@ snakemake --snakefile $(python -c 'import photon_mosaic; print(photon_mosaic.get
           --jobs 1
 ```
 
-This is equivalent to using the `photon-mosaic` CLI but gives full control over the Snakemake interface.
+This is equivalent to using the `photon-mosaic-pipeline` CLI but gives full control over the Snakemake interface.

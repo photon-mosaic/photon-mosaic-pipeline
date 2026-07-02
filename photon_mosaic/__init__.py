@@ -1,7 +1,7 @@
 from importlib.metadata import PackageNotFoundError, version
 
 try:
-    __version__ = version("photon-mosaic")
+    __version__ = version("photon-mosaic-pipeline")
 except PackageNotFoundError:
     # package is not installed
     pass

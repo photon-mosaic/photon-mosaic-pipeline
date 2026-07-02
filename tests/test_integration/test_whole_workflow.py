@@ -170,27 +170,27 @@ def test_snakemake_with_contrast(snake_test_env, test_config_with_contrast):
 
 
 def test_photon_mosaic_cli_dry_run(snake_test_env, run_photon_mosaic):
-    """Test that photon-mosaic can do a dry run."""
+    """Test that photon-mosaic-pipeline can do a dry run."""
     result = run_photon_mosaic(
         snake_test_env["workdir"],
         snake_test_env["configfile"],
     )
 
     assert result.returncode == 0, (
-        f"photon-mosaic CLI run failed:\nSTDOUT:\n{result.stdout}\n"
+        f"photon-mosaic-pipeline CLI run failed:\nSTDOUT:\n{result.stdout}\n"
         f"STDERR:\n{result.stderr}"
     )
 
 
 def test_photon_mosaic_cli(snake_test_env, run_photon_mosaic):
-    """Test photon-mosaic pipeline."""
+    """Test the photon-mosaic-pipeline CLI end-to-end."""
     result = run_photon_mosaic(
         snake_test_env["workdir"],
         snake_test_env["configfile"],
     )
 
     assert result.returncode == 0, (
-        f"photon-mosaic CLI run failed:\nSTDOUT:\n{result.stdout}\n"
+        f"photon-mosaic-pipeline CLI run failed:\nSTDOUT:\n{result.stdout}\n"
         f"STDERR:\n{result.stderr}"
     )
 

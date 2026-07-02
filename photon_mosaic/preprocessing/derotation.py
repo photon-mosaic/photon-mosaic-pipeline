@@ -1,5 +1,5 @@
 """
-Derotation preprocessing step for photon-mosaic.
+Derotation preprocessing step for photon-mosaic-pipeline.
 
 This module provides a function to derotate image data using the derotation
 package.

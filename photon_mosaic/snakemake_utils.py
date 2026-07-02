@@ -1,5 +1,5 @@
 """
-Snakemake utility functions for photon-mosaic.
+Snakemake utility functions for photon-mosaic-pipeline.
 
 This module provides utility functions used in Snakemake workflows,
 including path handling, GPU/CUDA checks, and workflow configuration.

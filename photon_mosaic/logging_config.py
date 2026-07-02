@@ -1,5 +1,5 @@
 """
-Logging configuration for photon-mosaic with formatting and colors.
+Logging configuration for photon-mosaic-pipeline with formatting and colors.
 """
 
 import logging

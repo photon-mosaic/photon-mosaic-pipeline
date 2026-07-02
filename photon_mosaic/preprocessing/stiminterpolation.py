@@ -1,5 +1,5 @@
 """
-Photonstimulation artefact removal step for photon-mosaic.
+Photonstimulation artefact removal step for photon-mosaic-pipeline.
 
 This module provides a function to remove artefacts by holographic
 photostimulation using the stiminterp package.

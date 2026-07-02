@@ -39,7 +39,7 @@ classifiers = [
 "User Support" = "https://github.com/photon-mosaic/photon-mosaic-pipeline/issues"
 
 [project.scripts]
-photon-mosaic = "photon_mosaic.cli:main"
+photon-mosaic-pipeline = "photon_mosaic.cli:main"
 
 [project.optional-dependencies]
 dev = [

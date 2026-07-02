@@ -1,5 +1,5 @@
 """
-Shared fixtures for all tests in the photon-mosaic test suite.
+Shared fixtures for all tests in the photon-mosaic-pipeline test suite.
 
 This module provides common fixtures used across both unit and integration
 tests, following the DRY principle to avoid duplication.
@@ -31,13 +31,13 @@ if os.environ.get("CI"):
 @pytest.fixture
 def run_photon_mosaic():
     def inner_run_photon_mosaic(workdir, configfile, timeout=None):
-        """Helper function to run photon-mosaic CLI with dry-run.
+        """Helper function to run photon-mosaic-pipeline CLI with dry-run.
 
         timeout: seconds to wait for the subprocess to complete. If None,
         wait indefinitely (no timeout).
         """
         cmd = [
-            "photon-mosaic",
+            "photon-mosaic-pipeline",
             "--config",
             str(configfile),
             "--log-level",
