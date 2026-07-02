@@ -23,7 +23,7 @@ from tests.tree_helpers import tree as tree_lines
 # Cellpose-SAM return 0 masks -> Suite2p writes no F.npy -> the workflow
 # fails. We gate on CI so local test runs keep using a working GPU/MPS (much
 # faster); the env var is also a manual override anywhere. See
-# photon_mosaic.rules.suite2p_run._force_cellpose_cpu_if_requested.
+# photon_mosaic_pipeline.rules.suite2p_run._force_cellpose_cpu_if_requested.
 if os.environ.get("CI"):
     os.environ.setdefault("PHOTON_MOSAIC_FORCE_CPU", "1")
 

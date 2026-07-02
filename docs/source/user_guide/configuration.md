@@ -146,7 +146,7 @@ The Snakemake SLURM executor plugin offers **two mutually exclusive ways** to re
 These keys live under `slurm:` but are forwarded to the rule level, not to Snakemake's `--default-resources`. On startup you will see an `INFO` log line such as:
 
 ```
-INFO:photon_mosaic.cli:Skipping gres in --default-resources (set at rule level to avoid conflicts): gpu:a100:1
+INFO:photon_mosaic_pipeline.cli:Skipping gres in --default-resources (set at rule level to avoid conflicts): gpu:a100:1
 ```
 
 That is expected behaviour, not an error: it confirms the value was picked up and routed to per-rule resources to avoid TRES conflicts. The same applies to `gpu` and `cpus_per_gpu`.
