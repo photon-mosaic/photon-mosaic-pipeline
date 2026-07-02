@@ -69,7 +69,7 @@ Other useful arguments you can pass:
 You can also run the workflow directly with `snakemake`, using the programmatic path to the bundled Snakefile:
 
 ```bash
-snakemake --snakefile $(python -c 'import photon_mosaic; print(photon_mosaic.get_snakefile_path())') \
+snakemake --snakefile $(python -c 'import photon_mosaic_pipeline; print(photon_mosaic_pipeline.get_snakefile_path())') \
           --configfile path/to/config.yaml \
           --jobs 1
 ```

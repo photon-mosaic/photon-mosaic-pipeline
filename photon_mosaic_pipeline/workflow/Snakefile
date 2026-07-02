@@ -14,8 +14,8 @@ The workflow:
 """
 
 from pathlib import Path
-from photon_mosaic import log_cuda_availability
-from photon_mosaic.paths_selection import (
+from photon_mosaic_pipeline import log_cuda_availability
+from photon_mosaic_pipeline.paths_selection import (
     find_raw_data_paths,
     adapt_paths_to_output_pattern,
     set_up_suite2p_targets,

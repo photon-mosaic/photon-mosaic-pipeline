@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from photon_mosaic import get_snakefile_path
+from photon_mosaic_pipeline import get_snakefile_path
 
 
 def run_snakemake(workdir, configfile, dry_run=False):
@@ -169,9 +169,11 @@ def test_snakemake_with_contrast(snake_test_env, test_config_with_contrast):
     )
 
 
-def test_photon_mosaic_cli_dry_run(snake_test_env, run_photon_mosaic):
+def test_photon_mosaic_pipeline_cli_dry_run(
+    snake_test_env, run_photon_mosaic_pipeline
+):
     """Test that photon-mosaic-pipeline can do a dry run."""
-    result = run_photon_mosaic(
+    result = run_photon_mosaic_pipeline(
         snake_test_env["workdir"],
         snake_test_env["configfile"],
     )
@@ -182,9 +184,11 @@ def test_photon_mosaic_cli_dry_run(snake_test_env, run_photon_mosaic):
     )
 
 
-def test_photon_mosaic_cli(snake_test_env, run_photon_mosaic):
+def test_photon_mosaic_pipeline_cli(
+    snake_test_env, run_photon_mosaic_pipeline
+):
     """Test the photon-mosaic-pipeline CLI end-to-end."""
-    result = run_photon_mosaic(
+    result = run_photon_mosaic_pipeline(
         snake_test_env["workdir"],
         snake_test_env["configfile"],
     )

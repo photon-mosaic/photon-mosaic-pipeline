@@ -29,8 +29,8 @@ if os.environ.get("CI"):
 
 
 @pytest.fixture
-def run_photon_mosaic():
-    def inner_run_photon_mosaic(workdir, configfile, timeout=None):
+def run_photon_mosaic_pipeline():
+    def inner_run_photon_mosaic_pipeline(workdir, configfile, timeout=None):
         """Helper function to run photon-mosaic-pipeline CLI with dry-run.
 
         timeout: seconds to wait for the subprocess to complete. If None,
@@ -56,7 +56,7 @@ def run_photon_mosaic():
 
         return result
 
-    return inner_run_photon_mosaic
+    return inner_run_photon_mosaic_pipeline
 
 
 @pytest.fixture
@@ -74,9 +74,13 @@ def data_factory():
 @pytest.fixture
 def base_config():
     """Create a base configuration that can be extended."""
-    photon_mosaic_path = Path(__file__).parent.parent
+    photon_mosaic_pipeline_path = Path(__file__).parent.parent
     with open(
-        photon_mosaic_path / "photon_mosaic" / "workflow" / "config.yaml", "r"
+        photon_mosaic_pipeline_path
+        / "photon_mosaic_pipeline"
+        / "workflow"
+        / "config.yaml",
+        "r",
     ) as f:
         config = yaml.safe_load(f)
 
@@ -89,9 +93,13 @@ def base_config():
 @pytest.fixture
 def metadata_base_config():
     """Create a base configuration for metadata testing."""
-    photon_mosaic_path = Path(__file__).parent.parent
+    photon_mosaic_pipeline_path = Path(__file__).parent.parent
     with open(
-        photon_mosaic_path / "photon_mosaic" / "workflow" / "config.yaml", "r"
+        photon_mosaic_pipeline_path
+        / "photon_mosaic_pipeline"
+        / "workflow"
+        / "config.yaml",
+        "r",
     ) as f:
         config = yaml.safe_load(f)
 

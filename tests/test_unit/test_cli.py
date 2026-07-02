@@ -2,7 +2,7 @@
 Unit tests for the CLI module.
 """
 
-from photon_mosaic.cli import (
+from photon_mosaic_pipeline.cli import (
     build_snakemake_command,
     configure_slurm_execution,
 )

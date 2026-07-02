@@ -12,8 +12,8 @@ from pathlib import Path
 
 import yaml
 
-from photon_mosaic import get_snakefile_path
-from photon_mosaic.logging_config import ensure_dir
+from photon_mosaic_pipeline import get_snakefile_path
+from photon_mosaic_pipeline.logging_config import ensure_dir
 
 
 def create_argument_parser():
@@ -103,9 +103,9 @@ def ensure_default_config(reset_config=False):
     if not default_config_path.exists() or reset_config:
         logger.debug("Creating default config file")
         default_config_dir.mkdir(parents=True, exist_ok=True)
-        source_config_path = pkg_resources.files("photon_mosaic").joinpath(
-            "workflow", "config.yaml"
-        )
+        source_config_path = pkg_resources.files(
+            "photon_mosaic_pipeline"
+        ).joinpath("workflow", "config.yaml")
         with (
             source_config_path.open("rb") as src,
             open(default_config_path, "wb") as dst,

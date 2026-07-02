@@ -17,9 +17,9 @@ def get_snakefile_path():
     Returns
     -------
     Path
-        Path to the Snakefile in the photon_mosaic package.
+        Path to the Snakefile in the photon_mosaic_pipeline package.
     """
-    return files("photon_mosaic").joinpath("workflow", "Snakefile")
+    return files("photon_mosaic_pipeline").joinpath("workflow", "Snakefile")
 
 
 def cross_platform_path(path):

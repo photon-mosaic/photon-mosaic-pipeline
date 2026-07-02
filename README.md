@@ -30,7 +30,7 @@ The goal of `photon-mosaic-pipeline` is to provide a modular, extensible, and us
 
 ## Roadmap
 ### Current features
-- Preprocessing: [derotation](https://github.com/neuroinformatics-unit/derotation) and contrast enhancement (see `photon_mosaic/preprocessing`).
+- Preprocessing: [derotation](https://github.com/neuroinformatics-unit/derotation) and contrast enhancement (see `photon_mosaic_pipeline/preprocessing`).
 - Registration & source extraction using [Suite2p](https://github.com/MouseLand/suite2p).
 - Cell detection / anatomical ROI extraction using [Cellpose (v3 or v4, including Cellpose-SAM)](https://github.com/MouseLand/cellpose).
 

@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 import pytest
 
-from photon_mosaic.preprocessing import stiminterpolation
+from photon_mosaic_pipeline.preprocessing import stiminterpolation
 
 
 def _create_dummy_tiff(path):
@@ -25,8 +25,10 @@ def _create_dummy_tiff(path):
     path.write_bytes(b"")
 
 
-@patch("photon_mosaic.preprocessing.stiminterpolation.parse_si_metadata")
-@patch("photon_mosaic.preprocessing.stiminterpolation.run_stiminterp")
+@patch(
+    "photon_mosaic_pipeline.preprocessing.stiminterpolation.parse_si_metadata"
+)
+@patch("photon_mosaic_pipeline.preprocessing.stiminterpolation.run_stiminterp")
 def test_run_calls_run_stiminterp_with_expected_args(
     mock_run, mock_parse, tmp_path
 ):
@@ -53,8 +55,10 @@ def test_run_calls_run_stiminterp_with_expected_args(
     )
 
 
-@patch("photon_mosaic.preprocessing.stiminterpolation.parse_si_metadata")
-@patch("photon_mosaic.preprocessing.stiminterpolation.run_stiminterp")
+@patch(
+    "photon_mosaic_pipeline.preprocessing.stiminterpolation.parse_si_metadata"
+)
+@patch("photon_mosaic_pipeline.preprocessing.stiminterpolation.run_stiminterp")
 def test_run_threads_kwargs_through_to_stiminterp(
     mock_run, mock_parse, tmp_path
 ):
@@ -85,8 +89,10 @@ def test_run_threads_kwargs_through_to_stiminterp(
     assert kwargs["n_pre_frames"] == 3
 
 
-@patch("photon_mosaic.preprocessing.stiminterpolation.parse_si_metadata")
-@patch("photon_mosaic.preprocessing.stiminterpolation.run_stiminterp")
+@patch(
+    "photon_mosaic_pipeline.preprocessing.stiminterpolation.parse_si_metadata"
+)
+@patch("photon_mosaic_pipeline.preprocessing.stiminterpolation.run_stiminterp")
 def test_save_metadata_true_writes_json(mock_run, mock_parse, tmp_path):
     """save_metadata=True writes the metadata JSON beside the output."""
     dataset_folder = tmp_path / "rawdata"
@@ -110,8 +116,10 @@ def test_save_metadata_true_writes_json(mock_run, mock_parse, tmp_path):
     }
 
 
-@patch("photon_mosaic.preprocessing.stiminterpolation.parse_si_metadata")
-@patch("photon_mosaic.preprocessing.stiminterpolation.run_stiminterp")
+@patch(
+    "photon_mosaic_pipeline.preprocessing.stiminterpolation.parse_si_metadata"
+)
+@patch("photon_mosaic_pipeline.preprocessing.stiminterpolation.run_stiminterp")
 def test_save_metadata_false_skips_json(mock_run, mock_parse, tmp_path):
     """save_metadata=False suppresses the JSON write entirely.
 
@@ -136,8 +144,10 @@ def test_save_metadata_false_skips_json(mock_run, mock_parse, tmp_path):
     assert not json_path.exists()
 
 
-@patch("photon_mosaic.preprocessing.stiminterpolation.parse_si_metadata")
-@patch("photon_mosaic.preprocessing.stiminterpolation.run_stiminterp")
+@patch(
+    "photon_mosaic_pipeline.preprocessing.stiminterpolation.parse_si_metadata"
+)
+@patch("photon_mosaic_pipeline.preprocessing.stiminterpolation.run_stiminterp")
 def test_run_finds_tiff_via_recursive_search(mock_run, mock_parse, tmp_path):
     """When the TIFF isn't directly under dataset_folder, rglob finds it."""
     dataset_folder = tmp_path / "rawdata"
@@ -173,8 +183,10 @@ def test_run_raises_when_tiff_missing(tmp_path):
         )
 
 
-@patch("photon_mosaic.preprocessing.stiminterpolation.parse_si_metadata")
-@patch("photon_mosaic.preprocessing.stiminterpolation.run_stiminterp")
+@patch(
+    "photon_mosaic_pipeline.preprocessing.stiminterpolation.parse_si_metadata"
+)
+@patch("photon_mosaic_pipeline.preprocessing.stiminterpolation.run_stiminterp")
 def test_empty_string_h5_is_passed_as_none(mock_run, mock_parse, tmp_path):
     """An empty `path_to_stim_h5` in YAML is treated as None.
 
@@ -199,8 +211,10 @@ def test_empty_string_h5_is_passed_as_none(mock_run, mock_parse, tmp_path):
     assert kwargs["input_h5"] is None
 
 
-@patch("photon_mosaic.preprocessing.stiminterpolation.parse_si_metadata")
-@patch("photon_mosaic.preprocessing.stiminterpolation.run_stiminterp")
+@patch(
+    "photon_mosaic_pipeline.preprocessing.stiminterpolation.parse_si_metadata"
+)
+@patch("photon_mosaic_pipeline.preprocessing.stiminterpolation.run_stiminterp")
 def test_string_path_inputs_are_coerced_to_path(
     mock_run, mock_parse, tmp_path
 ):

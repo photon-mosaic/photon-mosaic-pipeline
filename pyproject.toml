@@ -39,7 +39,7 @@ classifiers = [
 "User Support" = "https://github.com/photon-mosaic/photon-mosaic-pipeline/issues"
 
 [project.scripts]
-photon-mosaic-pipeline = "photon_mosaic.cli:main"
+photon-mosaic-pipeline = "photon_mosaic_pipeline.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -65,12 +65,12 @@ build-backend = "setuptools.build_meta"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["photon_mosaic*"]
+include = ["photon_mosaic_pipeline*"]
 exclude = ["tests", "docs*"]
 
 
 [tool.pytest.ini_options]
-addopts = "--cov=photon_mosaic"
+addopts = "--cov=photon_mosaic_pipeline"
 filterwarnings = [
     "error",
 ]
@@ -127,7 +127,7 @@ passenv =
     USERNAME
     CI
 commands =
-    pytest -v --color=yes --cov=photon_mosaic --cov-report=xml
+    pytest -v --color=yes --cov=photon_mosaic_pipeline --cov-report=xml
 """
 
 [tool.codespell]

@@ -34,7 +34,7 @@ pre-commit install
 
 ## Adding a New Feature
 
-To add a new feature, start by creating a new `.smk` rule file inside the `photon_mosaic/workflow/` folder. This rule should either call an installed package or use a wrapper function defined in the `photon_mosaic/rules/` Python module.
+To add a new feature, start by creating a new `.smk` rule file inside the `photon_mosaic_pipeline/workflow/` folder. This rule should either call an installed package or use a wrapper function defined in the `photon_mosaic_pipeline/rules/` Python module.
 
 If your feature needs specific parameters, make sure these are read from the `config.yaml` file, so they can be easily adjusted by the user.
 
@@ -58,7 +58,7 @@ Use the `cross_platform_path` function to construct paths that are compatible wi
 
 Example:
 ```python
-from photon_mosaic.pathing import cross_platform_path
+from photon_mosaic_pipeline.pathing import cross_platform_path
 
 rule example:
     input:
