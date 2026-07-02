@@ -5,18 +5,17 @@
 [![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/format.json)](https://github.com/astral-sh/ruff)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
-
 # <img src="docs/source/_static/logo.png" alt="photon-mosaic logo" width="36" style="vertical-align: middle; margin-right:8px"> `photon-mosaic-pipeline`
 `photon-mosaic-pipeline` is a Snakemake-based toolkit for processing multiphoton datasets. It orchestrates a curated collection of algorithms to transform your raw data (e.g., TIFF files) into analysis-ready outputs, such as ΔF/F traces, NWB files, or inferred spikes.
 
 > [!NOTE]
 > **This project was renamed from `photon-mosaic` to `photon-mosaic-pipeline`.**
 >
-> The name `photon-mosaic` now refers to a separate package under the same organisation: [`photon-mosaic`](https://github.com/photon-mosaic/photon-mosaic), a Python API (built on [SpikeInterface](https://github.com/SpikeInterface/spikeinterface)) for *exploring and comparing* multiphoton analysis methods interactively — mixing and matching algorithms for each step to find what works for your data.
+> The name `photon-mosaic` now refers to a separate package under the same organisation: [`photon-mosaic`](https://github.com/photon-mosaic/photon-mosaic), a Python API (built on [SpikeInterface](https://github.com/SpikeInterface/spikeinterface)) for *exploring and comparing* multiphoton analysis methods interactively: mixing and matching algorithms for each step to find what works for your data.
 >
 > `photon-mosaic-pipeline` (this repository) is the complementary package for *running the analysis you settled on* as a reproducible, batch-processed workflow at scale.
 >
-> **This rename is a breaking change.** The PyPI package, CLI command, and import name all move to `photon-mosaic-pipeline`/`photon_mosaic_pipeline`, as do the config dir (`~/.photon_mosaic_pipeline/`) and output folder (`derivatives/photon-mosaic-pipeline/`). Existing configs and derivatives under the old names are **not** picked up automatically — move or re-generate them after upgrading.
+> **This rename is a breaking change.** The PyPI package, CLI command, and import name all move to `photon-mosaic-pipeline`/`photon_mosaic_pipeline`, as do the config dir (`~/.photon_mosaic_pipeline/`) and output folder (`derivatives/photon-mosaic-pipeline/`). Existing configs and derivatives under the old names are **not** picked up automatically: move or re-generate them after upgrading.
 >
 > Both are part of the broader [**PhotonMosaic** framework](photon-mosaic.org), and we plan to integrate the two so the pipeline can run the methods you prototype with the API.
 
