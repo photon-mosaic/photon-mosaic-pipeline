@@ -2,7 +2,7 @@
 # Data Paths Configuration
 # ============================================================================
 # Project base directories
-project_path: /path/to/folder/
+project_path: ./
 
 # ============================================================================
 # Dataset Discovery Configuration

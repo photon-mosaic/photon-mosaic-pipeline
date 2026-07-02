@@ -10,7 +10,9 @@ On first run, `photon-mosaic-pipeline` will create a user config at `~/.photon_m
 
 `photon-mosaic-pipeline` expects you to organise your data in a project directory that follows the [NeuroBlueprint](https://neuroblueprint.neuroinformatics.dev/) specification. Raw data lives under `<project_path>/rawdata/`, and derivatives are written next to it under `<project_path>/derivatives/`. See the [data input documentation](data_input.md) for the required directory layout.
 
-You set the project directory with `--project_path` on the first run:
+By default `project_path` is set to `./`, so if you launch the pipeline from
+inside your project directory you can run it without any arguments. Otherwise,
+set the project directory explicitly with `--project_path` on the first run:
 
 ```bash
 photon-mosaic-pipeline --project_path /my/project
@@ -30,7 +32,8 @@ The configuration file is organized into several main sections. Here is a simpli
 
 ```yaml
 # Project path (must follow NeuroBlueprint: rawdata/sub-*/ses-*/funcimg/)
-project_path: "/path/to/project/"
+# Defaults to "./" (the current folder); override with --project_path
+project_path: ./
 
 # Filters applied to the NeuroBlueprint tree
 dataset_discovery:
