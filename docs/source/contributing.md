@@ -58,7 +58,7 @@ Use the `cross_platform_path` function to construct paths that are compatible wi
 
 Example:
 ```python
-from photon_mosaic_pipeline.pathing import cross_platform_path
+from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
 
 rule example:
     input:
