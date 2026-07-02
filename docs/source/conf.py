@@ -193,4 +193,8 @@ linkcheck_ignore = [
     "https://neuroinformatics.zulipchat.com/#narrow/channel/500681-photon-mosaic",
     "https://www.sciencedirect.com/science/article/pii/S089662731930889X",
     "https://pipeline.photon-mosaic.org/*",
+    # Self-reference to a path under the renamed package dir. It only exists
+    # on `main` once this rename PR merges, so linkcheck 404s until then.
+    # Safe to remove after merge.
+    "https://github.com/photon-mosaic/photon-mosaic-pipeline/blob/main/photon_mosaic_pipeline/.*",
 ]
