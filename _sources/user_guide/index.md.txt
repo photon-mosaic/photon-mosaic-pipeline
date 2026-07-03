@@ -1,7 +1,7 @@
 (user_guide/index)=
 # User Guide
 
-Welcome to the user guide for `photon-mosaic`.
+Welcome to the user guide for `photon-mosaic-pipeline`.
 This guide walks you through installation, configuration and basic usage of Snakemake.
 
 ::::{grid} 1 1 2 2
@@ -11,14 +11,14 @@ This guide walks you through installation, configuration and basic usage of Snak
 :link: installation
 :link-type: doc
 
-How to install `photon-mosaic` and its dependencies.
+How to install `photon-mosaic-pipeline` and its dependencies.
 :::
 
 :::{grid-item-card} 📁 Configuration
 :link: configuration
 :link-type: doc
 
-How to configure `photon-mosaic` for your specific needs.
+How to configure `photon-mosaic-pipeline` for your specific needs.
 :::
 
 :::{grid-item-card} 📁 Snakemake tutorial
@@ -32,7 +32,7 @@ Basic Snakemake tutorial to get you started.
 :link: preprocessing
 :link-type: doc
 
-Learn about the preprocessing steps available in photon-mosaic.
+Learn about the preprocessing steps available in `photon-mosaic-pipeline`.
 :::
 
 :::{grid-item-card} 🗂️ Data input

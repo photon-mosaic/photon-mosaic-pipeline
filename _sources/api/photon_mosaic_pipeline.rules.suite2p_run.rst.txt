@@ -1,0 +1,13 @@
+﻿photon\_mosaic\_pipeline.rules.suite2p\_run
+===========================================
+
+.. automodule:: photon_mosaic_pipeline.rules.suite2p_run
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_edited_options
+      run_suite2p
+   

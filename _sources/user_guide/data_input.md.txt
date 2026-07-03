@@ -1,7 +1,7 @@
 (user_guide/data_input)=
 # Data Input
 
-`photon-mosaic` expects raw data to follow the [NeuroBlueprint](https://neuroblueprint.neuroinformatics.dev/) specification. This means your `project_path` will contain a `rawdata/` folder organised like this. `photon-mosaic` will only look at `funcimg` subfolders in your project.
+`photon-mosaic-pipeline` expects raw data to follow the [NeuroBlueprint](https://neuroblueprint.neuroinformatics.dev/) specification. This means your `project_path` will contain a `rawdata/` folder organised like this. `photon-mosaic-pipeline` will only look at `funcimg` subfolders in your project.
 
 ```
 project_path/
@@ -20,13 +20,13 @@ project_path/
                 └── ...
 ```
 
-Outputs are written by `photon-mosaic` next to `rawdata/` under `derivatives/`, mirroring the `sub-*/ses-*/funcimg/` structure.
+Outputs are written by `photon-mosaic-pipeline` next to `rawdata/` under `derivatives/`, mirroring the `sub-*/ses-*/funcimg/` structure.
 
 The project is validated on every run via [`datashuttle.validate_project_from_path`](https://datashuttle.neuroinformatics.dev/) and should give you a clear error if anything went wrong.
 
 ## Converting an existing dataset
 
-If your raw data does not yet follow the NeuroBlueprint specification, we recommend you organise it first with [datashuttle](https://datashuttle.neuroinformatics.dev/), then point `photon-mosaic` at the resulting project folder.
+If your raw data does not yet follow the NeuroBlueprint specification, we recommend you organise it first with [datashuttle](https://datashuttle.neuroinformatics.dev/), then point `photon-mosaic-pipeline` at the resulting project folder.
 
 ## Filtering which files are processed
 

@@ -1,6 +1,6 @@
 # Contributing Guide
 
-Contributions to ``photon-mosaic`` are very welcome and appreciated. This could be
+Contributions to ``photon-mosaic-pipeline`` are very welcome and appreciated. This could be
 fixing a bug, improving the documentation or developing a new feature.
 
 If you're unsure about any part of the contributing process or have any questions, please
@@ -11,8 +11,8 @@ and [opening a pull request](#pull-requests).
 
 ## Creating a development environment
 
-To install ``photon-mosaic`` for development, first the
-[GitHub repository](https://github.com/neuroinformatics-unit/photon-mosaic)
+To install ``photon-mosaic-pipeline`` for development, first the
+[GitHub repository](https://github.com/photon-mosaic/photon-mosaic-pipeline)
 should be cloned. Then, you can change-directory
 to the cloned repository and run pip install with the developer tag:
 
@@ -34,7 +34,7 @@ pre-commit install
 
 ## Adding a New Feature
 
-To add a new feature, start by creating a new `.smk` rule file inside the `photon_mosaic/workflow/` folder. This rule should either call an installed package or use a wrapper function defined in the `photon_mosaic/rules/` Python module.
+To add a new feature, start by creating a new `.smk` rule file inside the `photon_mosaic_pipeline/workflow/` folder. This rule should either call an installed package or use a wrapper function defined in the `photon_mosaic_pipeline/rules/` Python module.
 
 If your feature needs specific parameters, make sure these are read from the `config.yaml` file, so they can be easily adjusted by the user.
 
@@ -58,7 +58,7 @@ Use the `cross_platform_path` function to construct paths that are compatible wi
 
 Example:
 ```python
-from photon_mosaic.pathing import cross_platform_path
+from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
 
 rule example:
     input:
@@ -167,7 +167,7 @@ folder and open the `index.html` file.
 ### Editing the documentation
 
 The documentation is hosted using [GitHub Pages](https://pages.github.com/), and the source can be found at
-[GitHub](https://github.com/neuroinformatics-unit/photon-mosaic/tree/main/docs).
+[GitHub](https://github.com/photon-mosaic/photon-mosaic-pipeline/tree/main/docs).
 Most content is found under `docs/source`, where the structure mirrors the rendered website.
 
 To edit a page, please:

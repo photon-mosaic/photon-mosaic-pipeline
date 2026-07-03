@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>photon-mosaic &#8212; photon-mosaic</title>
+    <title>photon-mosaic-pipeline &#8212; photon-mosaic-pipeline</title>
   
   
   
@@ -32,7 +32,7 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=8d03875c" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=b4aaff1f" />
   
   <!-- So that users can add custom icons -->
   <script defer src="_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
@@ -40,13 +40,13 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
 
-    <script src="_static/documentation_options.js?v=4621528c"></script>
+    <script src="_static/documentation_options.js?v=6c02275b"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <link rel="canonical" href="https://photon-mosaic.neuroinformatics.dev/index.html" />
+    <link rel="canonical" href="https://pipeline.photon-mosaic.org/index.html" />
     <link rel="icon" href="_static/light-logo-niu.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -129,7 +129,7 @@
     <img src="_static/logo.png" class="logo__image only-dark pst-js-only" alt=""/>
   
   
-    <p class="title logo__title">photon-mosaic v0.3.1</p>
+    <p class="title logo__title">photon-mosaic-pipeline v0.4.0</p>
   
 </a></div>
     
@@ -208,7 +208,7 @@
           
           
           
-          <a href="https://github.com/neuroinformatics-unit/photon-mosaic" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+          <a href="https://github.com/photon-mosaic/photon-mosaic-pipeline" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -327,7 +327,7 @@
           
           
           
-          <a href="https://github.com/neuroinformatics-unit/photon-mosaic" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+          <a href="https://github.com/photon-mosaic/photon-mosaic-pipeline" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -374,21 +374,31 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="photon-mosaic">
-<h1><a class="reference internal" href="_images/logo.png"><img alt="photon-mosaic logo" src="_images/logo.png" width="36" /></a> photon-mosaic<a class="headerlink" href="#photon-mosaic" title="Link to this heading">#</a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">photon-mosaic</span></code> is a Snakemake-based toolkit for processing multiphoton datasets. It orchestrates a curated collection of algorithms to transform your raw data (e.g., TIFF files) into analysis-ready outputs, such as ΔF/F traces, NWB files, or inferred spikes.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="photon-mosaic-pipeline">
+<h1><a class="reference internal" href="_images/logo.png"><img alt="photon-mosaic-pipeline logo" src="_images/logo.png" width="36" /></a> photon-mosaic-pipeline<a class="headerlink" href="#photon-mosaic-pipeline" title="Link to this heading">#</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code> is a Snakemake-based toolkit for processing multiphoton datasets. It orchestrates a curated collection of algorithms to transform your raw data (e.g., TIFF files) into analysis-ready outputs, such as ΔF/F traces, NWB files, or inferred spikes.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<blockquote>
+<div><p><strong>This project was renamed from <code class="docutils literal notranslate"><span class="pre">photon-mosaic</span></code> to <code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code>.</strong></p>
+<p>The name <code class="docutils literal notranslate"><span class="pre">photon-mosaic</span></code> now refers to a separate package under the same organisation: <a class="reference external" href="https://github.com/photon-mosaic/photon-mosaic"><code class="docutils literal notranslate"><span class="pre">photon-mosaic</span></code></a>, a Python API (built on <a class="reference external" href="https://github.com/SpikeInterface/spikeinterface">SpikeInterface</a>) for <em>exploring and comparing</em> multiphoton analysis methods interactively: mixing and matching algorithms for each step to find what works for your data.</p>
+<p><code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code> (this repository) is the complementary package for <em>running the analysis you settled on</em> as a reproducible, batch-processed workflow at scale.</p>
+<p><strong>This rename is a breaking change.</strong> The PyPI package, CLI command, and import name all move to <code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code>/<code class="docutils literal notranslate"><span class="pre">photon_mosaic_pipeline</span></code>, as do the config dir (<code class="docutils literal notranslate"><span class="pre">~/.photon_mosaic_pipeline/</span></code>) and output folder (<code class="docutils literal notranslate"><span class="pre">derivatives/photon-mosaic-pipeline/</span></code>). Existing configs and derivatives under the old names are <strong>not</strong> picked up automatically: move or re-generate them after upgrading.</p>
+<p>Both are part of the broader <a class="reference external" href="https://photon-mosaic.org"><strong>PhotonMosaic</strong> framework</a>, and we plan to integrate the two so the pipeline can run the methods you prototype with the API.</p>
+</div></blockquote>
+</div>
 <p>Each analysis step is integrated into an automated workflow, allowing you to chain preprocessing, registration, signal extraction, and post-processing steps into a single, reproducible pipeline. The design prioritizes usability for labs that process many imaging sessions and need to scale across an HPC cluster.</p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/neuroinformatics-unit/photon-mosaic/refs/heads/main/docs/source/_static/pm_illustration1.png" alt="photon-mosaic"/>
+  <img src="https://raw.githubusercontent.com/photon-mosaic/photon-mosaic-pipeline/refs/heads/main/docs/source/_static/pm_illustration1.png" alt="photon-mosaic"/>
 </p>
-<p>This is made possible by <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a>, a workflow management system that provides a powerful and flexible framework for defining and executing complex data processing pipelines. Snakemake automatically builds a directed acyclic graph (DAG) of all the steps in your analysis, ensuring that each step is executed in the correct order and that intermediate results are cached to avoid redundant computations. <code class="docutils literal notranslate"><span class="pre">photon-mosaic</span></code> also includes a <a class="reference external" href="https://github.com/snakemake/snakemake-executor-plugin-slurm">SLURM executor plugin for Snakemake</a> to seamlessly scale your analysis across an HPC cluster. To ensure consistency and reproducibility, <code class="docutils literal notranslate"><span class="pre">photon-mosaic</span></code> writes processed data according to the <a class="reference external" href="https://neuroblueprint.neuroinformatics.dev/latest/index.html">NeuroBlueprint</a> data standard for organizing and storing multiphoton imaging data.</p>
-<p>The goal of <code class="docutils literal notranslate"><span class="pre">photon-mosaic</span></code> is to provide a modular, extensible, and user-friendly framework for multiphoton data analysis that can be easily adapted to different experimental designs and analysis requirements. For each processing step, we aim to vet and integrate the best available open-source tools, providing sensible defaults tailored to the specific data type and experimental modality.</p>
+<p>This is made possible by <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a>, a workflow management system that provides a powerful and flexible framework for defining and executing complex data processing pipelines. Snakemake automatically builds a directed acyclic graph (DAG) of all the steps in your analysis, ensuring that each step is executed in the correct order and that intermediate results are cached to avoid redundant computations. <code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code> also includes a <a class="reference external" href="https://github.com/snakemake/snakemake-executor-plugin-slurm">SLURM executor plugin for Snakemake</a> to seamlessly scale your analysis across an HPC cluster. To ensure consistency and reproducibility, <code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code> writes processed data according to the <a class="reference external" href="https://neuroblueprint.neuroinformatics.dev/latest/index.html">NeuroBlueprint</a> data standard for organizing and storing multiphoton imaging data.</p>
+<p>The goal of <code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code> is to provide a modular, extensible, and user-friendly framework for multiphoton data analysis that can be easily adapted to different experimental designs and analysis requirements. For each processing step, we aim to vet and integrate the best available open-source tools, providing sensible defaults tailored to the specific data type and experimental modality.</p>
 <section id="roadmap">
 <h2>Roadmap<a class="headerlink" href="#roadmap" title="Link to this heading">#</a></h2>
 <section id="current-features">
 <h3>Current features<a class="headerlink" href="#current-features" title="Link to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Preprocessing: <a class="reference external" href="https://github.com/neuroinformatics-unit/derotation">derotation</a> and contrast enhancement (see <code class="docutils literal notranslate"><span class="pre">photon_mosaic/preprocessing</span></code>).</p></li>
+<li><p>Preprocessing: <a class="reference external" href="https://github.com/neuroinformatics-unit/derotation">derotation</a> and contrast enhancement (see <code class="docutils literal notranslate"><span class="pre">photon_mosaic_pipeline/preprocessing</span></code>).</p></li>
 <li><p>Registration &amp; source extraction using <a class="reference external" href="https://github.com/MouseLand/suite2p">Suite2p</a>.</p></li>
 <li><p>Cell detection / anatomical ROI extraction using <a class="reference external" href="https://github.com/MouseLand/cellpose">Cellpose (v3 or v4, including Cellpose-SAM)</a>.</p></li>
 </ul>
@@ -401,7 +411,7 @@
 <li><p>Neuropil subtraction / decontamination: methods from the <a class="reference external" href="https://allensdk.readthedocs.io/en/latest/allensdk.brain_observatory.r_neuropil.html">AllenSDK</a> and <a class="reference external" href="https://github.com/znamlab/2p-preprocess">AST-model</a>.</p></li>
 <li><p>Spike deconvolution: <a class="reference external" href="https://github.com/j-friedrich/OASIS">OASIS</a> and <a class="reference external" href="https://github.com/HelmchenLabSoftware/Cascade">CASCADE</a>.</p></li>
 </ul>
-<p>See <a class="reference external" href="https://github.com/neuroinformatics-unit/photon-mosaic/issues">issues on GitHub</a> and the <a class="reference external" href="https://github.com/orgs/neuroinformatics-unit/projects/17">project board</a> for more details and participate in planning. Please refer to our <a class="reference external" href="https://photon-mosaic.neuroinformatics.dev/contributing.html">guidelines</a> to understand how to contribute.</p>
+<p>See <a class="reference external" href="https://github.com/photon-mosaic/photon-mosaic-pipeline/issues">issues on GitHub</a> for more details and participate in planning. Please refer to our <a class="reference external" href="https://pipeline.photon-mosaic.org/contributing.html">guidelines</a> to understand how to contribute.</p>
 <div class="toctree-wrapper compound">
 </div>
 </section>

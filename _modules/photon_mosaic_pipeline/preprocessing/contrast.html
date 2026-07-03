@@ -2,13 +2,12 @@
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="../" >
+<html lang="en" data-content_root="../../../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <title>User Guide &#8212; photon-mosaic-pipeline</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>photon_mosaic_pipeline.preprocessing.contrast &#8212; photon-mosaic-pipeline</title>
   
   
   
@@ -27,39 +26,37 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=b4aaff1f" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=b4aaff1f" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
 
-    <script src="../_static/documentation_options.js?v=6c02275b"></script>
-    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/index';</script>
+    <script src="../../../_static/documentation_options.js?v=6c02275b"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/photon_mosaic_pipeline/preprocessing/contrast';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <link rel="canonical" href="https://pipeline.photon-mosaic.org/user_guide/index.html" />
-    <link rel="icon" href="../_static/light-logo-niu.png"/>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Installation" href="installation.html" />
-    <link rel="prev" title="photon-mosaic-pipeline" href="../index.html" />
+    <link rel="canonical" href="https://pipeline.photon-mosaic.org/_modules/photon_mosaic_pipeline/preprocessing/contrast.html" />
+    <link rel="icon" href="../../../_static/light-logo-niu.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
     
-    <script src="../_static/searchtools.js"></script>
-    <script src="../_static/language_data.js"></script>
-    <script src="../searchindex.js"></script>
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
   
   </head>
   <body data-default-mode="">
@@ -79,7 +76,7 @@
   <dialog id="pst-search-dialog">
     
 <form class="bd-search d-flex align-items-center"
-      action="../search.html"
+      action="../../../search.html"
       method="get">
   <i class="fa-solid fa-magnifying-glass"></i>
   <input type="search"
@@ -115,7 +112,7 @@
     
   
 
-<a class="navbar-brand logo" href="../index.html">
+<a class="navbar-brand logo" href="../../../index.html">
   
   
   
@@ -126,8 +123,8 @@
       
     
     
-    <img src="../_static/logo.png" class="logo__image only-light" alt=""/>
-    <img src="../_static/logo.png" class="logo__image only-dark pst-js-only" alt=""/>
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/logo.png" class="logo__image only-dark pst-js-only" alt=""/>
   
   
     <p class="title logo__title">photon-mosaic-pipeline v0.4.0</p>
@@ -144,22 +141,22 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="#">
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
     User Guide
   </a>
 </li>
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../contributing.html">
+  <a class="nav-link nav-internal" href="../../../contributing.html">
     Contributing Guide
   </a>
 </li>
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../api_index.html">
+  <a class="nav-link nav-internal" href="../../../api_index.html">
     API Reference
   </a>
 </li>
@@ -250,6 +247,8 @@
       
       
       
+        
+      
       <dialog id="pst-primary-sidebar-modal"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
         
@@ -266,22 +265,22 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="#">
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
     User Guide
   </a>
 </li>
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../contributing.html">
+  <a class="nav-link nav-internal" href="../../../contributing.html">
     Contributing Guide
   </a>
 </li>
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../api_index.html">
+  <a class="nav-link nav-internal" href="../../../api_index.html">
     API Reference
   </a>
 </li>
@@ -372,11 +371,14 @@
   <ul class="bd-breadcrumbs">
     
     <li class="breadcrumb-item breadcrumb-home">
-      <a href="../index.html" class="nav-link" aria-label="Home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
         <i class="fa-solid fa-home"></i>
       </a>
     </li>
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">User Guide</span></li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">photon_mosaic_pipeline.preprocessing.contrast</span></li>
   </ul>
 </nav>
 </div>
@@ -393,63 +395,86 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="user-guide">
-<span id="user-guide-index"></span><h1>User Guide<a class="headerlink" href="#user-guide" title="Link to this heading">#</a></h1>
-<p>Welcome to the user guide for <code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code>.
-This guide walks you through installation, configuration and basic usage of Snakemake.</p>
-<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
-<div class="sd-row sd-row-cols-1 sd-row-cols-xs-1 sd-row-cols-sm-1 sd-row-cols-md-2 sd-row-cols-lg-2 sd-g-3 sd-g-xs-3 sd-g-sm-3 sd-g-md-3 sd-g-lg-3 docutils">
-<div class="sd-col sd-d-flex-row docutils">
-<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
-<div class="sd-card-body docutils">
-<div class="sd-card-title sd-font-weight-bold docutils">
-🏗️ Installation</div>
-<p class="sd-card-text">How to install <code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code> and its dependencies.</p>
-</div>
-<a class="sd-stretched-link sd-hide-link-text reference internal" href="installation.html"><span class="doc">Installation</span></a></div>
-</div>
-<div class="sd-col sd-d-flex-row docutils">
-<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
-<div class="sd-card-body docutils">
-<div class="sd-card-title sd-font-weight-bold docutils">
-📁 Configuration</div>
-<p class="sd-card-text">How to configure <code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code> for your specific needs.</p>
-</div>
-<a class="sd-stretched-link sd-hide-link-text reference internal" href="configuration.html"><span class="doc">Configuration</span></a></div>
-</div>
-<div class="sd-col sd-d-flex-row docutils">
-<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
-<div class="sd-card-body docutils">
-<div class="sd-card-title sd-font-weight-bold docutils">
-📁 Snakemake tutorial</div>
-<p class="sd-card-text">Basic Snakemake tutorial to get you started.</p>
-</div>
-<a class="sd-stretched-link sd-hide-link-text reference internal" href="snakemake_tutorial.html"><span class="doc">Basic Snakemake Tutorial</span></a></div>
-</div>
-<div class="sd-col sd-d-flex-row docutils">
-<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
-<div class="sd-card-body docutils">
-<div class="sd-card-title sd-font-weight-bold docutils">
-🔄 Preprocessing</div>
-<p class="sd-card-text">Learn about the preprocessing steps available in <code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code>.</p>
-</div>
-<a class="sd-stretched-link sd-hide-link-text reference internal" href="preprocessing.html"><span class="doc">Preprocessing</span></a></div>
-</div>
-<div class="sd-col sd-d-flex-row docutils">
-<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
-<div class="sd-card-body docutils">
-<div class="sd-card-title sd-font-weight-bold docutils">
-🗂️ Data input</div>
-<p class="sd-card-text">How to organise raw data in NeuroBlueprint format and filter which TIFFs the pipeline processes.</p>
-</div>
-<a class="sd-stretched-link sd-hide-link-text reference internal" href="data_input.html"><span class="doc">Data Input</span></a></div>
-</div>
-</div>
-</div>
-<div class="toctree-wrapper compound">
-</div>
-</section>
+  <h1>Source code for photon_mosaic_pipeline.preprocessing.contrast</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Contrast enhancement preprocessing step.</span>
 
+<span class="sd">This module provides functions to enhance the contrast of images.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tifffile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">skimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">exposure</span>
+
+
+<div class="viewcode-block" id="run">
+<a class="viewcode-back" href="../../../api/photon_mosaic_pipeline.preprocessing.contrast.html#photon_mosaic_pipeline.preprocessing.contrast.run">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span>
+    <span class="n">dataset_folder</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">output_folder</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">tiff_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">percentile_low</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">percentile_high</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">99</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enhance the contrast of an image.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset_folder : Path</span>
+<span class="sd">        Path to the dataset folder containing the input TIFF files.</span>
+<span class="sd">    output_folder : Path</span>
+<span class="sd">        Path to the output folder where the processed TIFF files will be saved.</span>
+<span class="sd">    tiff_name : str</span>
+<span class="sd">        Name of the TIFF file to process.</span>
+<span class="sd">    percentile_low : float, optional</span>
+<span class="sd">        Lower percentile for contrast stretching. Default is 1.</span>
+<span class="sd">    percentile_high : float, optional</span>
+<span class="sd">        Upper percentile for contrast stretching. Default is 99.</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Additional keyword arguments (unused).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        The function saves the enhanced image to the output folder with the</span>
+<span class="sd">        prefix ``enhanced_`` and returns nothing.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The function will search for the TIFF file using rglob if it&#39;s not found</span>
+<span class="sd">    at the expected location.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Convert paths to Path objects if they&#39;re strings</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset_folder</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">dataset_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">dataset_folder</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">output_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_folder</span><span class="p">)</span>
+
+    <span class="n">tiff_file</span> <span class="o">=</span> <span class="n">dataset_folder</span> <span class="o">/</span> <span class="n">tiff_name</span>
+
+    <span class="c1"># Load the image</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">tifffile</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">tiff_file</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="c1">#  use rglob to find the correct path</span>
+        <span class="n">correct_path</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">dataset_folder</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="n">tiff_name</span><span class="p">))</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">tifffile</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">correct_path</span><span class="p">)</span>
+
+    <span class="c1"># Enhance contrast</span>
+    <span class="n">p_low</span><span class="p">,</span> <span class="n">p_high</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="n">percentile_low</span><span class="p">,</span> <span class="n">percentile_high</span><span class="p">))</span>
+    <span class="n">img_enhanced</span> <span class="o">=</span> <span class="n">exposure</span><span class="o">.</span><span class="n">rescale_intensity</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">in_range</span><span class="o">=</span><span class="p">(</span><span class="n">p_low</span><span class="p">,</span> <span class="n">p_high</span><span class="p">))</span>
+
+    <span class="c1"># Append filename to output path</span>
+    <span class="n">output_path</span> <span class="o">=</span> <span class="n">output_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;enhanced_</span><span class="si">{</span><span class="n">tiff_name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># Save the enhanced image</span>
+    <span class="n">tifffile</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">img_enhanced</span><span class="p">)</span></div>
+
+</pre></div>
 
                 </article>
               
@@ -460,24 +485,6 @@ This guide walks you through installation, configuration and basic usage of Snak
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
-    <a class="left-prev"
-       href="../index.html"
-       title="previous page">
-      <i class="fa-solid fa-angle-left"></i>
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title"> photon-mosaic-pipeline</p>
-      </div>
-    </a>
-    <a class="right-next"
-       href="installation.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Installation</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
 </div>
                 </footer>
               
@@ -496,8 +503,8 @@ This guide walks you through installation, configuration and basic usage of Snak
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -522,16 +529,16 @@ This guide walks you through installation, configuration and basic usage of Snak
       
         <div class="footer-item"><div class="things-in-a-row">
     <a href="https://neuroinformatics.dev/">
-        <img src="../_static/light-logo-niu.png" alt="NIU" class="only-light img-sponsor"/>
-        <img src="../_static/dark-logo-niu.png" alt="NIU" class="only-dark img-sponsor"/>
+        <img src="../../../_static/light-logo-niu.png" alt="NIU" class="only-light img-sponsor"/>
+        <img src="../../../_static/dark-logo-niu.png" alt="NIU" class="only-dark img-sponsor"/>
     </a>
     <a href="https://www.sainsburywellcome.org/web/">
-        <img src="../_static/light-logo-swc.png" alt="SWC" class="only-light img-sponsor"/>
-        <img src="../_static/dark-logo-swc.png" alt="SWC" class="only-dark img-sponsor"/>
+        <img src="../../../_static/light-logo-swc.png" alt="SWC" class="only-light img-sponsor"/>
+        <img src="../../../_static/dark-logo-swc.png" alt="SWC" class="only-dark img-sponsor"/>
     </a>
     <a href="https://www.ucl.ac.uk/">
-        <img src="../_static/light-logo-ucl.png" alt="UCL" class="only-light img-sponsor"/>
-        <img src="../_static/dark-logo-ucl.png" alt="UCL" class="only-dark img-sponsor"/>
+        <img src="../../../_static/light-logo-ucl.png" alt="UCL" class="only-light img-sponsor"/>
+        <img src="../../../_static/dark-logo-ucl.png" alt="UCL" class="only-dark img-sponsor"/>
     </a>
 </div></div>
       

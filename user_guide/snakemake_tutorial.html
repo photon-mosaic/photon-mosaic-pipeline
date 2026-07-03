@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Basic Snakemake Tutorial &#8212; photon-mosaic</title>
+    <title>Basic Snakemake Tutorial &#8212; photon-mosaic-pipeline</title>
   
   
   
@@ -32,7 +32,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=8d03875c" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=b4aaff1f" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
@@ -40,13 +40,13 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
 
-    <script src="../_static/documentation_options.js?v=4621528c"></script>
+    <script src="../_static/documentation_options.js?v=6c02275b"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/snakemake_tutorial';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <link rel="canonical" href="https://photon-mosaic.neuroinformatics.dev/user_guide/snakemake_tutorial.html" />
+    <link rel="canonical" href="https://pipeline.photon-mosaic.org/user_guide/snakemake_tutorial.html" />
     <link rel="icon" href="../_static/light-logo-niu.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -130,7 +130,7 @@
     <img src="../_static/logo.png" class="logo__image only-dark pst-js-only" alt=""/>
   
   
-    <p class="title logo__title">photon-mosaic v0.3.1</p>
+    <p class="title logo__title">photon-mosaic-pipeline v0.4.0</p>
   
 </a></div>
     
@@ -209,7 +209,7 @@
           
           
           
-          <a href="https://github.com/neuroinformatics-unit/photon-mosaic" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+          <a href="https://github.com/photon-mosaic/photon-mosaic-pipeline" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -326,7 +326,7 @@
           
           
           
-          <a href="https://github.com/neuroinformatics-unit/photon-mosaic" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+          <a href="https://github.com/photon-mosaic/photon-mosaic-pipeline" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -425,19 +425,19 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="basic-snakemake-tutorial">
 <span id="user-guide-snakemake-tutorial"></span><h1>Basic Snakemake Tutorial<a class="headerlink" href="#basic-snakemake-tutorial" title="Link to this heading">#</a></h1>
-<p>With <code class="docutils literal notranslate"><span class="pre">photon-mosaic</span></code>, you can run a Snakemake workflow that automatically executes the necessary steps to process your data. The workflow is included in the installed package and can be customized using a YAML configuration file.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code>, you can run a Snakemake workflow that automatically executes the necessary steps to process your data. The workflow is included in the installed package and can be customized using a YAML configuration file.</p>
 <p>The pipeline expects a <a class="reference external" href="https://neuroblueprint.neuroinformatics.dev/">NeuroBlueprint</a>-compliant project at <code class="docutils literal notranslate"><span class="pre">--project_path</span></code>, with raw TIFFs under <code class="docutils literal notranslate"><span class="pre">rawdata/sub-*/ses-*/funcimg/</span></code>. Each <code class="docutils literal notranslate"><span class="pre">(subject,</span> <span class="pre">session)</span></code> is processed in parallel, and results are written to a mirrored layout under <code class="docutils literal notranslate"><span class="pre">derivatives/</span></code>. See the <a class="reference internal" href="data_input.html"><span class="std std-doc">data input documentation</span></a> for the required structure.</p>
 <section id="why-use-snakemake">
 <h2>Why use Snakemake?<a class="headerlink" href="#why-use-snakemake" title="Link to this heading">#</a></h2>
 <p>Snakemake is a powerful workflow management system that allows you to run complex data analysis pipelines in a reproducible and efficient manner. For each defined rule (a rule is a step in the workflow, for instance running Suite2p), Snakemake checks if the output files already exist and whether they are up to date. If not, it runs the rule and generates the outputs.</p>
 <p>This approach lets you rerun only the parts of the workflow that need to be updated, avoiding the need to repeat the entire analysis each time.</p>
-<p>Here we show examples that do not call directly the <code class="docutils literal notranslate"><span class="pre">snakemake</span></code> command, but instead use the <code class="docutils literal notranslate"><span class="pre">photon-mosaic</span></code> CLI, which is a wrapper around Snakemake that simplifies the execution of the workflow.</p>
+<p>Here we show examples that do not call directly the <code class="docutils literal notranslate"><span class="pre">snakemake</span></code> command, but instead use the <code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code> CLI, which is a wrapper around Snakemake that simplifies the execution of the workflow.</p>
 </section>
 <section id="dry-run">
 <h2>Dry Run<a class="headerlink" href="#dry-run" title="Link to this heading">#</a></h2>
 <p>A dry run is a simulation that shows what would happen if the workflow were executed, without actually running any commands. This is useful for verifying that everything is set up correctly. The output includes a DAG (directed acyclic graph) showing dependencies between rules, which files will be created, and which rules will be executed.</p>
 <p>To preview the workflow without running it:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>photon-mosaic<span class="w"> </span>--dry-run
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>photon-mosaic-pipeline<span class="w"> </span>--dry-run
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">--jobs</span></code> specifies the number of jobs to run in parallel. You can increase this number to parallelize execution across datasets. A dry run can also be abbreviated to <code class="docutils literal notranslate"><span class="pre">-np</span></code> if using Snakemake directly.</p>
@@ -445,24 +445,24 @@
 <section id="running-the-workflow">
 <h2>Running the Workflow<a class="headerlink" href="#running-the-workflow" title="Link to this heading">#</a></h2>
 <p>On the first run, you need to point the pipeline at your NeuroBlueprint project:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>photon-mosaic<span class="w"> </span>--project_path<span class="w"> </span>/path/to/project
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>photon-mosaic-pipeline<span class="w"> </span>--project_path<span class="w"> </span>/path/to/project
 </pre></div>
 </div>
 <p>For more details, see the <a class="reference internal" href="configuration.html"><span class="std std-doc">configuration documentation</span></a>.</p>
 <p>To run the full workflow after the first run, you can simply run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>photon-mosaic
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>photon-mosaic-pipeline
 </pre></div>
 </div>
 <p>You can also specify how many jobs you want to run in parallel with the <code class="docutils literal notranslate"><span class="pre">--jobs</span></code> flag.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>photon-mosaic<span class="w"> </span>--jobs<span class="w"> </span><span class="m">5</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>photon-mosaic-pipeline<span class="w"> </span>--jobs<span class="w"> </span><span class="m">5</span>
 </pre></div>
 </div>
 <p>To force the re-execution of a specific rule:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>photon-mosaic<span class="w"> </span>--forcerun<span class="w"> </span>suite2p
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>photon-mosaic-pipeline<span class="w"> </span>--forcerun<span class="w"> </span>suite2p
 </pre></div>
 </div>
 <p>To reprocess a specific session, you can specify a target output file (e.g., <code class="docutils literal notranslate"><span class="pre">F.npy</span></code>) from the derivatives tree:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>photon-mosaic<span class="w"> </span>/path/to/derivatives/sub-001/ses-001/funcimg/suite2p/plane0/F.npy
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>photon-mosaic-pipeline<span class="w"> </span>/path/to/derivatives/sub-001/ses-001/funcimg/suite2p/plane0/F.npy
 </pre></div>
 </div>
 <p>To run the workflow on a cluster, check instructions in the <a class="reference internal" href="configuration.html"><span class="std std-doc">configuration documentation</span></a>.</p>
@@ -478,12 +478,12 @@
 <section id="direct-snakemake-usage">
 <h2>Direct Snakemake Usage<a class="headerlink" href="#direct-snakemake-usage" title="Link to this heading">#</a></h2>
 <p>You can also run the workflow directly with <code class="docutils literal notranslate"><span class="pre">snakemake</span></code>, using the programmatic path to the bundled Snakefile:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>snakemake<span class="w"> </span>--snakefile<span class="w"> </span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import photon_mosaic; print(photon_mosaic.get_snakefile_path())&#39;</span><span class="k">)</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>snakemake<span class="w"> </span>--snakefile<span class="w"> </span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import photon_mosaic_pipeline; print(photon_mosaic_pipeline.get_snakefile_path())&#39;</span><span class="k">)</span><span class="w"> </span><span class="se">\</span>
 <span class="w">          </span>--configfile<span class="w"> </span>path/to/config.yaml<span class="w"> </span><span class="se">\</span>
 <span class="w">          </span>--jobs<span class="w"> </span><span class="m">1</span>
 </pre></div>
 </div>
-<p>This is equivalent to using the <code class="docutils literal notranslate"><span class="pre">photon-mosaic</span></code> CLI but gives full control over the Snakemake interface.</p>
+<p>This is equivalent to using the <code class="docutils literal notranslate"><span class="pre">photon-mosaic-pipeline</span></code> CLI but gives full control over the Snakemake interface.</p>
 </section>
 </section>
 

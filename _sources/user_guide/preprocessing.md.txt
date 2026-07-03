@@ -1,6 +1,6 @@
 # Preprocessing
 
-The preprocessing module in photon-mosaic provides a flexible system for applying preprocessing steps to image data. Each preprocessing step is a function that takes an image array and returns a processed image array.
+The preprocessing module in `photon-mosaic-pipeline` provides a flexible system for applying preprocessing steps to image data. Each preprocessing step is a function that takes an image array and returns a processed image array.
 
 There are three available preprocessing steps:
 - `noop`: No operation, simply copies the input files to the output directory without any modification.

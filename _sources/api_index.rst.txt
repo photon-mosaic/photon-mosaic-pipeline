@@ -4,22 +4,7 @@ API Reference
 =============
 
 This section contains automatically generated documentation for the
-`photon-mosaic` package.
-
-.. toctree::
-   :maxdepth: 2
-   :caption: API Documentation
-
-   photon_mosaic.cli
-   photon_mosaic.logging_config
-   photon_mosaic.paths_selection
-   photon_mosaic.preprocessing.contrast
-   photon_mosaic.preprocessing.derotation
-   photon_mosaic.preprocessing.noop
-   photon_mosaic.preprocessing.stiminterpolation
-   photon_mosaic.rules.preprocessing
-   photon_mosaic.rules.suite2p_run
-   photon_mosaic.snakemake_utils
+`photon-mosaic-pipeline` package.
 
 .. rubric:: Modules
 
@@ -27,13 +12,13 @@ This section contains automatically generated documentation for the
    :toctree: api
    :nosignatures:
 
-   photon_mosaic.cli
-   photon_mosaic.logging_config
-   photon_mosaic.paths_selection
-   photon_mosaic.preprocessing.contrast
-   photon_mosaic.preprocessing.derotation
-   photon_mosaic.preprocessing.noop
-   photon_mosaic.preprocessing.stiminterpolation
-   photon_mosaic.rules.preprocessing
-   photon_mosaic.rules.suite2p_run
-   photon_mosaic.snakemake_utils
+   photon_mosaic_pipeline.cli
+   photon_mosaic_pipeline.logging_config
+   photon_mosaic_pipeline.paths_selection
+   photon_mosaic_pipeline.preprocessing.contrast
+   photon_mosaic_pipeline.preprocessing.derotation
+   photon_mosaic_pipeline.preprocessing.noop
+   photon_mosaic_pipeline.preprocessing.stiminterpolation
+   photon_mosaic_pipeline.rules.preprocessing
+   photon_mosaic_pipeline.rules.suite2p_run
+   photon_mosaic_pipeline.snakemake_utils

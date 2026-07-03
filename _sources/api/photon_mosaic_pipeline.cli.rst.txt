@@ -1,0 +1,21 @@
+﻿photon\_mosaic\_pipeline.cli
+============================
+
+.. automodule:: photon_mosaic_pipeline.cli
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      build_snakemake_command
+      configure_slurm_execution
+      create_argument_parser
+      ensure_default_config
+      execute_pipeline_with_retry
+      load_and_process_config
+      main
+      save_timestamped_config
+      setup_output_directories
+      update_default_config
+   
