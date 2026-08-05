@@ -1,5 +1,5 @@
 """
-Command line interface for photon-mosaic.
+Command line interface for photon-mosaic-pipeline.
 """
 
 import argparse
@@ -12,8 +12,8 @@ from pathlib import Path
 
 import yaml
 
-from photon_mosaic import get_snakefile_path
-from photon_mosaic.logging_config import ensure_dir
+from photon_mosaic_pipeline import get_snakefile_path
+from photon_mosaic_pipeline.logging_config import ensure_dir
 
 
 def create_argument_parser():
@@ -25,7 +25,7 @@ def create_argument_parser():
         Configured argument parser with all CLI options
     """
     parser = argparse.ArgumentParser(
-        description="Run the photon-mosaic Snakemake pipeline."
+        description="Run the photon-mosaic-pipeline Snakemake pipeline."
     )
     parser.add_argument(
         "--config",
@@ -103,15 +103,15 @@ def ensure_default_config(reset_config=False):
         Path to the default config file
     """
     logger = logging.getLogger(__name__)
-    default_config_dir = Path.home() / ".photon_mosaic"
+    default_config_dir = Path.home() / ".photon_mosaic_pipeline"
     default_config_path = default_config_dir / "config.yaml"
 
     if not default_config_path.exists() or reset_config:
         logger.debug("Creating default config file")
         default_config_dir.mkdir(parents=True, exist_ok=True)
-        source_config_path = pkg_resources.files("photon_mosaic").joinpath(
-            "workflow", "config.yaml"
-        )
+        source_config_path = pkg_resources.files(
+            "photon_mosaic_pipeline"
+        ).joinpath("workflow", "config.yaml")
         with (
             source_config_path.open("rb") as src,
             open(default_config_path, "wb") as dst,
@@ -211,7 +211,7 @@ def setup_output_directories(project_path):
     """
     logger = logging.getLogger(__name__)
 
-    output_dir = project_path / "derivatives" / "photon-mosaic"
+    output_dir = project_path / "derivatives" / "photon-mosaic-pipeline"
     logger.debug(f"Creating output directory: {output_dir}")
 
     logs_dir = output_dir / "logs"
@@ -307,6 +307,11 @@ def build_snakemake_command(args, config_path):
         # Default to quiet mode unless --verbose is specified
         cmd.append("--quiet")
 
+    if os.getenv("CI"):
+        cmd.append("--nolock")
+        cmd.append("--latency-wait")
+        cmd.append("30")
+
     return cmd
 
 
@@ -340,7 +345,11 @@ def configure_slurm_execution(cmd, config):
     # Configure SLURM log directory to persist logs
     project_path = Path(config["project_path"]).resolve()
     slurm_logdir = (
-        project_path / "derivatives" / "photon-mosaic" / "logs" / "slurm"
+        project_path
+        / "derivatives"
+        / "photon-mosaic-pipeline"
+        / "logs"
+        / "slurm"
     )
     ensure_dir(slurm_logdir, mode=0o755, parents=True, exist_ok=True)
 
@@ -476,8 +485,8 @@ def execute_pipeline_with_retry(cmd, log_path):
 
 
 def main():
-    """Run the photon-mosaic Snakemake pipeline for automated and reproducible
-    analysis of multiphoton calcium imaging datasets.
+    """Run the photon-mosaic-pipeline Snakemake pipeline for automated
+    and reproducible analysis of multiphoton calcium imaging datasets.
 
     This pipeline integrates Suite2p for image registration and signal
     extraction, with a standardized output folder structure following
@@ -485,11 +494,14 @@ def main():
     store their data on servers connected to HPC clusters and want to
     batch-process multiple imaging sessions in parallel.
 
-    Command Line Arguments
-    ---------------------
+    Notes
+    -----
+    The pipeline is invoked via the ``photon-mosaic-pipeline`` CLI. The
+    supported command-line arguments are:
+
     --config : str, optional
         Path to your config.yaml file. If not provided, uses
-        ~/.photon_mosaic/config.yaml.
+        ~/.photon_mosaic_pipeline/config.yaml.
     --project_path : str, optional
         Override project_path in config file (root of NeuroBlueprint project).
     --jobs : str, default="1"
@@ -514,12 +526,12 @@ def main():
     extra : list
         Additional arguments to pass to snakemake.
 
-    Notes
-    -----
-    The pipeline will:
-    1. Create a timestamped config file in derivatives/photon-mosaic/configs/
-    2. Save execution logs in derivatives/photon-mosaic/logs/
-    3. Process all TIFF files found under rawdata/sub-*/ses-*/funcimg/
+    On each invocation, the pipeline will:
+
+    1. Create a timestamped config file in
+       ``derivatives/photon-mosaic-pipeline/configs/``
+    2. Save execution logs in ``derivatives/photon-mosaic-pipeline/logs/``
+    3. Process all TIFF files found under ``rawdata/sub-*/ses-*/funcimg/``
     4. Generate standardized outputs following NeuroBlueprint specification
     """
     # Parse command line arguments
@@ -529,7 +541,7 @@ def main():
     # Set up logging
     logging.basicConfig(level=args.log_level)
     logger = logging.getLogger(__name__)
-    logger.debug("Starting photon-mosaic CLI")
+    logger.debug("Starting photon-mosaic-pipeline CLI")
 
     # Load and process configuration
     config, _ = load_and_process_config(args)

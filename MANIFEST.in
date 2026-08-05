@@ -2,8 +2,8 @@ include LICENSE
 include README.md
 include requirements-dev.txt
 
-recursive-include photon_mosaic *.py
-recursive-include photon_mosaic/workflow *
+recursive-include photon_mosaic_pipeline *.py
+recursive-include photon_mosaic_pipeline/workflow *
 
 exclude .pre-commit-config.yaml
 

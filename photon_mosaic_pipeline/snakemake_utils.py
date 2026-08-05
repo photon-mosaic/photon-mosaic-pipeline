@@ -1,5 +1,5 @@
 """
-Snakemake utility functions for photon-mosaic.
+Snakemake utility functions for photon-mosaic-pipeline.
 
 This module provides utility functions used in Snakemake workflows,
 including path handling, GPU/CUDA checks, and workflow configuration.
@@ -17,9 +17,9 @@ def get_snakefile_path():
     Returns
     -------
     Path
-        Path to the Snakefile in the photon_mosaic package.
+        Path to the Snakefile in the photon_mosaic_pipeline package.
     """
-    return files("photon_mosaic").joinpath("workflow", "Snakefile")
+    return files("photon_mosaic_pipeline").joinpath("workflow", "Snakefile")
 
 
 def cross_platform_path(path):

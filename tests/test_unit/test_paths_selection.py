@@ -1,4 +1,4 @@
-from photon_mosaic.paths_selection import find_raw_data_paths
+from photon_mosaic_pipeline.paths_selection import find_raw_data_paths
 
 
 def test_find_raw_data_paths(tmp_path, data_factory):

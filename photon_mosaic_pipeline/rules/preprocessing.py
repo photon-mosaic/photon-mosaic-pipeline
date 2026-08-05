@@ -26,8 +26,8 @@ def run_preprocessing(
     ses_idx : int, optional
         Session index to process. Default is 0.
     tiff_name : str, optional
-        Name of the TIFF file to process. Required for 'noop' and 'contrast'
-        preprocessing steps.
+        Name of the TIFF file to process. Required for 'noop', 'contrast',
+        and 'stiminterpolation' preprocessing steps.
 
     Returns
     -------
@@ -49,7 +49,7 @@ def run_preprocessing(
     # Import the preprocessing module and get the run function
     try:
         module = importlib.import_module(
-            f"photon_mosaic.preprocessing.{step_name}"
+            f"photon_mosaic_pipeline.preprocessing.{step_name}"
         )
         func = getattr(module, "run")
     except (ImportError, AttributeError) as e:

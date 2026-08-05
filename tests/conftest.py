@@ -1,11 +1,12 @@
 """
-Shared fixtures for all tests in the photon-mosaic test suite.
+Shared fixtures for all tests in the photon-mosaic-pipeline test suite.
 
 This module provides common fixtures used across both unit and integration
 tests, following the DRY principle to avoid duplication.
 """
 
 import argparse
+import os
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -16,17 +17,27 @@ import yaml
 from tests.test_data_factory import DataFactory
 from tests.tree_helpers import tree as tree_lines
 
+# On CI, pin Cellpose to the CPU. The integration tests run the pipeline by
+# spawning snakemake as a subprocess (which inherits os.environ), and
+# GitHub-hosted macOS runners expose a non-functional MPS device that makes
+# Cellpose-SAM return 0 masks -> Suite2p writes no F.npy -> the workflow
+# fails. We gate on CI so local test runs keep using a working GPU/MPS (much
+# faster); the env var is also a manual override anywhere. See
+# photon_mosaic_pipeline.rules.suite2p_run._force_cellpose_cpu_if_requested.
+if os.environ.get("CI"):
+    os.environ.setdefault("PHOTON_MOSAIC_FORCE_CPU", "1")
+
 
 @pytest.fixture
-def run_photon_mosaic():
-    def inner_run_photon_mosaic(workdir, configfile, timeout=None):
-        """Helper function to run photon-mosaic CLI with dry-run.
+def run_photon_mosaic_pipeline():
+    def inner_run_photon_mosaic_pipeline(workdir, configfile, timeout=None):
+        """Helper function to run photon-mosaic-pipeline CLI with dry-run.
 
         timeout: seconds to wait for the subprocess to complete. If None,
         wait indefinitely (no timeout).
         """
         cmd = [
-            "photon-mosaic",
+            "photon-mosaic-pipeline",
             "--config",
             str(configfile),
             "--log-level",
@@ -45,7 +56,7 @@ def run_photon_mosaic():
 
         return result
 
-    return inner_run_photon_mosaic
+    return inner_run_photon_mosaic_pipeline
 
 
 @pytest.fixture
@@ -63,9 +74,13 @@ def data_factory():
 @pytest.fixture
 def base_config():
     """Create a base configuration that can be extended."""
-    photon_mosaic_path = Path(__file__).parent.parent
+    photon_mosaic_pipeline_path = Path(__file__).parent.parent
     with open(
-        photon_mosaic_path / "photon_mosaic" / "workflow" / "config.yaml", "r"
+        photon_mosaic_pipeline_path
+        / "photon_mosaic_pipeline"
+        / "workflow"
+        / "config.yaml",
+        "r",
     ) as f:
         config = yaml.safe_load(f)
 
@@ -78,9 +93,13 @@ def base_config():
 @pytest.fixture
 def metadata_base_config():
     """Create a base configuration for metadata testing."""
-    photon_mosaic_path = Path(__file__).parent.parent
+    photon_mosaic_pipeline_path = Path(__file__).parent.parent
     with open(
-        photon_mosaic_path / "photon_mosaic" / "workflow" / "config.yaml", "r"
+        photon_mosaic_pipeline_path
+        / "photon_mosaic_pipeline"
+        / "workflow"
+        / "config.yaml",
+        "r",
     ) as f:
         config = yaml.safe_load(f)
 

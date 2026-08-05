@@ -8,8 +8,10 @@ right answer is analytically known.
 
 import numpy as np
 
-from photon_mosaic.rules.dff_run import calculate_dFF, dFF
-from photon_mosaic.rules.neuropil_run import calculate_neuropil_correction
+from photon_mosaic_pipeline.rules.dff_run import calculate_dFF, dFF
+from photon_mosaic_pipeline.rules.neuropil_run import (
+    calculate_neuropil_correction,
+)
 
 # ---------------------------------------------------------------------------
 # dFF

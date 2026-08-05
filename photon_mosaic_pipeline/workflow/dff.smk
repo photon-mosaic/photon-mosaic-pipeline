@@ -15,8 +15,8 @@ Output: dF/F results (dFF.npy, F0.npy) in dff/plane0/ directory
 """
 
 import re
-from photon_mosaic.snakemake_utils import cross_platform_path
-from photon_mosaic.paths_selection import _DERIVATIVES
+from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
+from photon_mosaic_pipeline.paths_selection import _DERIVATIVES
 
 
 rule dff:
@@ -48,7 +48,7 @@ rule dff:
     resources:
         **(slurm_config if config.get("use_slurm") else {}),
     run:
-        from photon_mosaic.rules.dff_run import calculate_dFF
+        from photon_mosaic_pipeline.rules.dff_run import calculate_dFF
         from pathlib import Path
 
         input_path_Fc = Path(input.Fc).resolve()

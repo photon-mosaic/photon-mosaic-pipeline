@@ -14,7 +14,7 @@ def make_api_index():
     Generate a properly formatted `api_index.rst` file for
     Sphinx documentation."""
 
-    api_path = Path("../photon_mosaic")
+    api_path = Path("../photon_mosaic_pipeline")
     module_entries = []
 
     for path in sorted(api_path.rglob("*.py")):
@@ -33,21 +33,8 @@ API Reference
 =============
 
 This section contains automatically generated documentation for the
-`photon-mosaic` package.
+`photon-mosaic-pipeline` package.
 
-.. toctree::
-   :maxdepth: 2
-   :caption: API Documentation
-
-"""
-
-    # Add module entries for the toctree
-    api_index_content += (
-        "\n".join(f"   {module}" for module in module_entries) + "\n\n"
-    )
-
-    # Add the autosummary directive
-    api_index_content += """\
 .. rubric:: Modules
 
 .. autosummary::

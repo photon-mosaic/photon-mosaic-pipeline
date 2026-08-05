@@ -41,7 +41,7 @@ def run(
     -------
     None
         The function saves the enhanced image to the output folder with the
-        prefix "enhanced_" and returns nothing.
+        prefix ``enhanced_`` and returns nothing.
 
     Notes
     -----

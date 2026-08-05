@@ -19,3 +19,19 @@ html[data-theme="dark"] .bd-content img:not(.only-dark) {
     flex-wrap: wrap;
     justify-content: space-between;
 }
+
+/*
+ * The rename note in index.md is included verbatim from the README, where it
+ * is a GitHub-style blockquote alert (`> [!NOTE]`). Inside a Sphinx admonition
+ * that blockquote adds a redundant quote bar/indent, so flatten it to read as
+ * normal admonition body text.
+ */
+.admonition > blockquote,
+.admonition > blockquote > div {
+    margin: 0;
+    padding: 0;
+    border-left: none;
+    background: unset;
+    font-style: inherit;
+    color: inherit;
+}

@@ -1,13 +1,13 @@
 from importlib.metadata import PackageNotFoundError, version
 
 try:
-    __version__ = version("photon-mosaic")
+    __version__ = version("photon-mosaic-pipeline")
 except PackageNotFoundError:
     # package is not installed
     pass
 
 # Import snakemake utilities for convenience
-from photon_mosaic.snakemake_utils import (
+from photon_mosaic_pipeline.snakemake_utils import (
     cross_platform_path,
     get_snakefile_path,
     log_cuda_availability,

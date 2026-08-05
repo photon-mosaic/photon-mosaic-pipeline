@@ -2,12 +2,39 @@
 Snakemake rule for running Suite2P.
 """
 
+import os
 import traceback
 from pathlib import Path
 from typing import Optional
 
 from suite2p import run_s2p
 from suite2p.default_ops import default_ops
+
+
+def _force_cellpose_cpu_if_requested():
+    """Force Cellpose onto CPU when ``PHOTON_MOSAIC_FORCE_CPU=1``.
+
+    Suite2p's anatomical detection runs Cellpose on a GPU whenever
+    ``cellpose.core.use_gpu()`` reports one is available. On a real
+    Apple-Silicon machine the MPS backend works and is the right default, so
+    this is **off by default**. But GitHub-hosted macOS runners expose an MPS
+    device that torch detects and can allocate on, yet which computes
+    Cellpose-SAM incorrectly -- it returns 0 masks, so Suite2p writes no
+    ``F.npy`` and the pipeline fails. Setting ``PHOTON_MOSAIC_FORCE_CPU=1``
+    pins Cellpose to the CPU, which produces correct masks everywhere. The
+    test suite sets this var (see ``tests/conftest.py``); the snakemake
+    subprocesses inherit it.
+    """
+    if os.environ.get("PHOTON_MOSAIC_FORCE_CPU") != "1":
+        return
+    try:
+        import cellpose.core
+
+        cellpose.core.use_gpu = lambda *args, **kwargs: False
+    except ImportError:
+        # Cellpose isn't importable (e.g. anatomical detection disabled) --
+        # nothing to force; suite2p will run its non-Cellpose path.
+        pass
 
 
 def run_suite2p(
@@ -39,6 +66,8 @@ def run_suite2p(
         dataset folder.
     """
     save_folder = Path(stat_path).parents[1]
+
+    _force_cellpose_cpu_if_requested()
 
     ops = get_edited_options(
         input_path=dataset_folder,

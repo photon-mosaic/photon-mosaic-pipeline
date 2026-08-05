@@ -12,8 +12,8 @@ Output: Suite2p analysis results (F.npy, data.bin) in suite2p/plane0/ directory
 """
 
 import re
-from photon_mosaic.snakemake_utils import cross_platform_path
-from photon_mosaic.paths_selection import _DERIVATIVES
+from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
+from photon_mosaic_pipeline.paths_selection import _DERIVATIVES
 
 
 rule suite2p:
@@ -76,7 +76,7 @@ rule suite2p:
     resources:
         **(slurm_config if config.get("use_slurm") else {}),
     run:
-        from photon_mosaic.rules.suite2p_run import run_suite2p
+        from photon_mosaic_pipeline.rules.suite2p_run import run_suite2p
         from pathlib import Path
 
         # Ensure all paths are properly resolved

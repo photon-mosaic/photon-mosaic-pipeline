@@ -1,5 +1,5 @@
 [project]
-name = "photon-mosaic"
+name = "photon-mosaic-pipeline"
 authors = [{name = "Laura Porta", email= "ucqflpo@ucl.ac.uk"}]
 description = "Automating calcium imaging analysis"
 readme = "README.md"
@@ -14,7 +14,8 @@ dependencies = [
   "PyYAML",
   "datashuttle",
   "derotation",
-  "suite2p-NIU"
+  "suite2p-NIU",
+  "stiminterp"
 ]
 
 license = {text = "BSD-3-Clause"}
@@ -31,15 +32,15 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/neuroinformatics-unit/photon-mosaic"
-"Bug Tracker" = "https://github.com/neuroinformatics-unit/photon-mosaic/issues"
-"Documentation" = "https://photon-mosaic.neuroinformatics.dev"
+"Homepage" = "https://github.com/photon-mosaic/photon-mosaic-pipeline"
+"Bug Tracker" = "https://github.com/photon-mosaic/photon-mosaic-pipeline/issues"
+"Documentation" = "https://pipeline.photon-mosaic.org"
 
-"Source Code" = "https://github.com/neuroinformatics-unit/photon-mosaic"
-"User Support" = "https://github.com/neuroinformatics-unit/photon-mosaic/issues"
+"Source Code" = "https://github.com/photon-mosaic/photon-mosaic-pipeline"
+"User Support" = "https://github.com/photon-mosaic/photon-mosaic-pipeline/issues"
 
 [project.scripts]
-photon-mosaic = "photon_mosaic.cli:main"
+photon-mosaic-pipeline = "photon_mosaic_pipeline.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -65,12 +66,12 @@ build-backend = "setuptools.build_meta"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["photon_mosaic*"]
+include = ["photon_mosaic_pipeline*"]
 exclude = ["tests", "docs*"]
 
 
 [tool.pytest.ini_options]
-addopts = "--cov=photon_mosaic"
+addopts = "--cov=photon_mosaic_pipeline"
 filterwarnings = [
     "error",
 ]
@@ -125,8 +126,9 @@ deps =
     .[dev]
 passenv =
     USERNAME
+    CI
 commands =
-    pytest -v --color=yes --cov=photon_mosaic --cov-report=xml
+    pytest -v --color=yes --cov=photon_mosaic_pipeline --cov-report=xml
 """
 
 [tool.codespell]

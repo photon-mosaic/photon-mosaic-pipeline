@@ -2,7 +2,7 @@
 Unit tests for the CLI module.
 """
 
-from photon_mosaic.cli import (
+from photon_mosaic_pipeline.cli import (
     build_snakemake_command,
     configure_slurm_execution,
 )
@@ -72,7 +72,7 @@ def test_configure_slurm_enabled_adds_executor_and_logdir(tmp_path):
     cmd = configure_slurm_execution(["snakemake"], config)
 
     expected_logdir = (
-        tmp_path / "derivatives" / "photon-mosaic" / "logs" / "slurm"
+        tmp_path / "derivatives" / "photon-mosaic-pipeline" / "logs" / "slurm"
     )
     assert "--executor" in cmd
     assert cmd[cmd.index("--executor") + 1] == "slurm"
@@ -99,7 +99,7 @@ def test_configure_slurm_extra_uses_logdir_not_nodelist(tmp_path):
 
     resources = cmd[cmd.index("--default-resources") + 1]
     expected_logdir = (
-        tmp_path / "derivatives" / "photon-mosaic" / "logs" / "slurm"
+        tmp_path / "derivatives" / "photon-mosaic-pipeline" / "logs" / "slurm"
     )
     assert f"--output={expected_logdir}/%j_%x.out" in resources
     assert f"--error={expected_logdir}/%j_%x.err" in resources

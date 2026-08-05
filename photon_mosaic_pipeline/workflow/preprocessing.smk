@@ -13,9 +13,9 @@ Output: Preprocessed TIFF files organized by subject/session
 """
 
 from pathlib import Path
-from photon_mosaic.rules.preprocessing import run_preprocessing
-from photon_mosaic.snakemake_utils import cross_platform_path
-from photon_mosaic.paths_selection import _RAWDATA, _DERIVATIVES
+from photon_mosaic_pipeline.rules.preprocessing import run_preprocessing
+from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
+from photon_mosaic_pipeline.paths_selection import _RAWDATA, _DERIVATIVES
 import re
 import logging
 import os
@@ -78,7 +78,7 @@ rule preprocessing:
     resources:
         **(slurm_config if config.get("use_slurm") else {}),
     run:
-        from photon_mosaic.rules.preprocessing import run_preprocessing
+        from photon_mosaic_pipeline.rules.preprocessing import run_preprocessing
 
         run_preprocessing(
             Path(params.output_folder),
