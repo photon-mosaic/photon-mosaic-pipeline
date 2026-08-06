@@ -3,14 +3,15 @@ Photon Mosaic Main Workflow
 
 This is the main Snakefile that orchestrates the entire photon mosaic processing pipeline.
 It handles dataset discovery, target generation, and coordinates the preprocessing,
-suite2p analysis workflows.
+suite2p analysis, neuropil correction, and dF/F calculation workflows.
 
 The workflow:
 1. Discovers datasets and their TIFF files from the raw data directory
 2. Generates preprocessing targets for each dataset/session combination
 3. Generates suite2p analysis targets for processed data
-4. Generates dff calculation targets for processed data
-5. Includes preprocessing.smk, suite2p.smk modules to execute the actual processing
+4. Generates neuropil correction targets from suite2p outputs
+5. Generates dF/F calculation targets from neuropil-corrected traces
+6. Includes preprocessing.smk, suite2p.smk, neuropil.smk, dff.smk modules
 """
 
 from pathlib import Path
@@ -19,6 +20,8 @@ from photon_mosaic_pipeline.paths_selection import (
     find_raw_data_paths,
     adapt_paths_to_output_pattern,
     set_up_suite2p_targets,
+    set_up_neuropil_targets,
+    set_up_dff_targets,
     _RAWDATA,
     _DERIVATIVES,
 )
@@ -79,12 +82,24 @@ suite2p_targets = set_up_suite2p_targets(preproc_targets)
 
 logger.info(f"Suite2p targets: {suite2p_targets}")
 
+neuropil_targets = set_up_neuropil_targets(preproc_targets)
+
+logger.info(f"Neuropil targets: {neuropil_targets}")
+
+dff_targets = set_up_dff_targets(preproc_targets)
+
+logger.info(f"dF/F targets: {dff_targets}")
+
 
 include: "preprocessing.smk"
 include: "suite2p.smk"
+include: "neuropil.smk"
+include: "dff.smk"
 
 
 rule all:
     input:
         preproc_targets,
         suite2p_targets,
+        neuropil_targets,
+        dff_targets,

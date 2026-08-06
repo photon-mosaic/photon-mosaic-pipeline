@@ -55,8 +55,14 @@ def create_argument_parser():
     )
     parser.add_argument(
         "--latency-wait",
-        default=10,
-        help="Time to wait before checking if output files are ready",
+        default=30,
+        help=(
+            "Seconds to wait for an output file to appear after a rule "
+            "finishes (snakemake's --latency-wait). Default 30 is sized "
+            "for NFS on the SWC cluster, where fast rules (~15s) can "
+            "complete before their output dir propagates to the "
+            "orchestrator's view. Lower it for purely local runs."
+        ),
     )
     parser.add_argument(
         "--log-level",
@@ -506,8 +512,11 @@ def main():
         Force re-run of a specific rule (e.g., 'suite2p').
     --rerun-incomplete : bool, optional
         Rerun any incomplete jobs.
-    --latency-wait : int, default=10
-        Time to wait before checking if output files are ready.
+    --latency-wait : int, default=30
+        Seconds to wait for an output file to appear after a rule
+        finishes (snakemake's --latency-wait). Default 30 is sized for
+        NFS on the SWC cluster, where fast rules (~15s) can complete
+        before their output dir propagates to the orchestrator's view.
     --log-level : str, default="INFO"
         Log level.
     --verbose, -v : flag, optional
