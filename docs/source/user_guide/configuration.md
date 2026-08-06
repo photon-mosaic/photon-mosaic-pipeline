@@ -68,13 +68,15 @@ suite2p_ops:
   roidetect: true
   anatomical_only: 0
 
-# SLURM settings
+# SLURM settings (one block per rule, named after the rule)
 use_slurm: false
 slurm:
-  slurm_partition: "gpu"
-  mem_mb: 32000
-  tasks: 1
-  nodes: 1
+  preprocessing:
+    slurm_partition: "cpu"
+    mem_mb: 8000
+  suite2p:
+    slurm_partition: "gpu"
+    mem_mb: 32000
 ```
 
 For the complete configuration file with all available parameters and detailed comments, see [photon_mosaic_pipeline/workflow/config.yaml](https://github.com/photon-mosaic/photon-mosaic-pipeline/blob/main/photon_mosaic_pipeline/workflow/config.yaml) or the YAML file in `~/.photon_mosaic_pipeline/config.yaml` generated on first run.
@@ -123,6 +125,59 @@ Photon-mosaic uses Cellpose 4 by default, with `cpsam` model. If you want to use
 - `nodes`: Number of compute nodes
 
 In order for SLURM jobs to be executed, you have to launch `photon-mosaic-pipeline` inside an environment in an interactive job in your cluster.
+
+#### Resources are set per rule
+
+The `slurm:` block holds **one sub-block per rule, named after the rule**. Each rule uses only its own block:
+
+```yaml
+slurm:
+  preprocessing:
+    slurm_partition: "cpu"
+    mem_mb: 8000
+
+  suite2p:
+    slurm_partition: "gpu"
+    gres: "gpu:a4500:1"
+    mem_mb: 32000
+```
+
+Rules have genuinely different needs — `suite2p` wants a GPU, preprocessing is CPU-only — and giving every rule the same resources means the CPU step requests a GPU it never uses and then waits in the GPU queue for it. With its own block, preprocessing goes straight to the CPU partition.
+
+Nothing is inherited between blocks, so a rule never has to *remove* a resource it did not want.
+
+**Every rule needs a block.** A rule with no block gets no resources at all and will be submitted with whatever your cluster defaults to. If you add a rule, add its block.
+
+#### Sharing keys between rules
+
+For keys that really are the same everywhere, use a YAML anchor rather than repeating them. Define them once under a key starting with `_` (keys starting with `_` are treated as config scaffolding and are never passed to SLURM), then pull them in with `<<:`:
+
+```yaml
+slurm:
+  _common: &common
+    tasks: 1
+    nodes: 1
+    runtime: 120
+    # slurm_account: "your_account_name"   # replace with YOUR cluster account
+
+  preprocessing:
+    <<: *common
+    slurm_partition: "cpu"
+    mem_mb: 8000
+
+  suite2p:
+    <<: *common
+    slurm_partition: "gpu"
+    mem_mb: 32000
+```
+
+A key set in a rule's own block wins over the anchor, so `mem_mb` above differs per rule while `runtime` is shared.
+
+`slurm_account` is specific to your cluster — the shipped config leaves it commented out with a placeholder. Replace `your_account_name` with your own account, or delete the line if your cluster does not require one.
+
+#### Older, flat configs
+
+A `slurm:` block with no per-rule sub-blocks still works and applies to every rule, exactly as before. Existing configs keep running unchanged; per-rule blocks are opt-in.
 
 #### GPU resources: `gpu` vs `gres`
 
