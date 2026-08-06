@@ -173,20 +173,34 @@ suite2p_ops:
 # Settings for SLURM job scheduling system
 use_slurm: false
 slurm:
-  slurm_partition: "gpu"  # GPU partition for processing
-  mem_mb: 32000          # Memory allocation in MB
-  tasks: 1               # Number of tasks
-  nodes: 1               # Number of nodes to use
+  # One block per rule, named after the rule. Each rule uses ONLY its own
+  # block, so a CPU-only step never inherits the GPU request and never has to
+  # wait in the GPU queue for a resource it does not use.
+  #
+  # Keys shared between rules go in the `_common` anchor below and are pulled
+  # in with `<<: *common`. Keys starting with `_` are config scaffolding and
+  # are never passed to SLURM.
+  _common: &common
+    tasks: 1               # Number of tasks
+    nodes: 1               # Number of nodes to use
+    # runtime: 120         # Walltime limit in minutes
+    # slurm_account: "your_account_name"  # Replace with YOUR cluster account
+    # constraint: "feature"  # Node feature requirements
 
-  # GPU-specific resources (will be set at rule level, not via --default-resources)
-  # Uncomment and configure as needed:
-  # gpu: 1                 # Number of GPUs to request
-  # gres: "gpu:a100:1"     # Alternative: Generic Resource (GRES) specification
-  # cpus_per_gpu: 4        # CPUs allocated per GPU
-  # tasks_per_gpu: 0       # Tasks per GPU (set to 0 to disable --ntasks-per-gpu and avoid TRES conflicts)
+  preprocessing:
+    <<: *common
+    slurm_partition: "cpu"  # Preprocessing is CPU-only
+    mem_mb: 8000            # Memory allocation in MB
 
-  # Additional SLURM resources that can be specified:
-  # runtime: 120           # Walltime limit in minutes
-  # slurm_account: "account_name"  # SLURM account for resource tracking
-  # constraint: "feature"  # Node feature requirements
-  # mem_mb_per_cpu: 2000   # Memory per CPU (mutually exclusive with mem_mb)
+  suite2p:
+    <<: *common
+    slurm_partition: "gpu"  # GPU partition for processing
+    mem_mb: 32000           # Memory allocation in MB
+
+    # GPU resources. `gpu` and `gres` are mutually exclusive - pick one.
+    # Uncomment and configure as needed:
+    # gpu: 1                 # Number of GPUs to request
+    # gres: "gpu:a100:1"     # Alternative: Generic Resource (GRES) specification
+    # cpus_per_gpu: 4        # CPUs allocated per GPU
+    # tasks_per_gpu: 0       # Tasks per GPU (set to 0 to disable --ntasks-per-gpu and avoid TRES conflicts)
+    # mem_mb_per_cpu: 2000   # Memory per CPU (mutually exclusive with mem_mb)
