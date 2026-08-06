@@ -119,10 +119,11 @@ Photon-mosaic uses Cellpose 4 by default, with `cpsam` model. If you want to use
 
 ### SLURM
 - `use_slurm`: Enable/disable SLURM job scheduling (default: false)
-- `slurm_partition`: Compute partition to use
-- `mem_mb`: Memory allocation per job
-- `tasks`: Number of parallel tasks
-- `nodes`: Number of compute nodes
+- `slurm`: One sub-block per rule (see below), each holding that rule's resources:
+  - `slurm_partition`: Compute partition to use
+  - `mem_mb`: Memory allocation per job
+  - `tasks`: Number of parallel tasks
+  - `nodes`: Number of compute nodes
 
 In order for SLURM jobs to be executed, you have to launch `photon-mosaic-pipeline` inside an environment in an interactive job in your cluster.
 
@@ -146,7 +147,7 @@ Rules have genuinely different needs — `suite2p` wants a GPU, preprocessing is
 
 Nothing is inherited between blocks, so a rule never has to *remove* a resource it did not want.
 
-**Every rule needs a block.** A rule with no block gets no resources at all and will be submitted with whatever your cluster defaults to. If you add a rule, add its block.
+**Every rule needs a block.** A rule with no block of its own requests nothing but its log paths, and will be submitted with whatever your cluster defaults to. If you add a rule, add its block.
 
 #### Sharing keys between rules
 
@@ -177,34 +178,30 @@ A key set in a rule's own block wins over the anchor, so `mem_mb` above differs 
 
 #### Older, flat configs
 
-A `slurm:` block with no per-rule sub-blocks still works and applies to every rule, exactly as before. Existing configs keep running unchanged; per-rule blocks are opt-in.
+A `slurm:` block with no per-rule sub-blocks still applies to every rule, so existing configs keep working and per-rule blocks are opt-in. Two small differences from before: `null` values and any nested blocks are no longer passed to SLURM as resources.
+
+You can also migrate one rule at a time — give a rule its own block and leave the rest on the flat keys. A rule with its own block uses **only** that block; it does not pick up the flat keys as well.
 
 #### GPU resources: `gpu` vs `gres`
 
-The Snakemake SLURM executor plugin offers **two mutually exclusive ways** to request a GPU. You have to pick one! Combining them produces TRES (Trackable RESources) conflicts at the scheduler.
+The Snakemake SLURM executor plugin offers **two mutually exclusive ways** to request a GPU. You have to pick one! Combining them produces TRES (Trackable RESources) conflicts at the scheduler. Put them in the block of the rule that needs the GPU — usually `suite2p` — so that no other rule requests one.
 
 - **`gpu`**: request a number of GPUs of any type. The plugin translates this into `--gpus`. Pair with `cpus_per_gpu` if needed.
 
   ```yaml
   slurm:
-    gpu: 1
-    cpus_per_gpu: 4
+    suite2p:
+      gpu: 1
+      cpus_per_gpu: 4
   ```
 
 - **`gres`**: request a specific GPU model via SLURM's Generic Resource string. The plugin translates this into `--gres`. Use this when the cluster has mixed GPU types and you need a specific one (e.g. `"gpu:a100:1"` for one A100). Do **not** also set `gpu`.
 
   ```yaml
   slurm:
-    gres: "gpu:a100:1"
+    suite2p:
+      gres: "gpu:a100:1"
   ```
-
-These keys live under `slurm:` but are forwarded to the rule level, not to Snakemake's `--default-resources`. On startup you will see an `INFO` log line such as:
-
-```
-INFO:photon_mosaic_pipeline.cli:Skipping gres in --default-resources (set at rule level to avoid conflicts): gpu:a100:1
-```
-
-That is expected behaviour, not an error: it confirms the value was picked up and routed to per-rule resources to avoid TRES conflicts. The same applies to `gpu` and `cpus_per_gpu`.
 
 For the upstream mechanics, see the [GRES alternative method](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/slurm.html#alternative-method-using-the-gres-resource) in the Snakemake SLURM plugin docs.
 

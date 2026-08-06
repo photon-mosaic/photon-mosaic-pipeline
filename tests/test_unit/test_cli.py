@@ -165,3 +165,37 @@ def test_log_paths_not_injected_when_slurm_disabled(tmp_path):
     inject_slurm_log_paths(config)
 
     assert "slurm_extra" not in config["slurm"]["suite2p"]
+
+
+def test_log_paths_reach_rules_in_a_mixed_config(tmp_path):
+    """A config may be migrated one rule at a time; none may lose its logs.
+
+    With flat keys AND a per-rule block, `suite2p` uses its block while
+    `preprocessing` still falls back to the flat keys. Injecting only into the
+    sub-blocks left preprocessing with resources but no --output/--error, so
+    its sbatch logs went to the working directory -- silently, and exactly the
+    class of "no error log" report in #108.
+
+    Also pins that the fallback is a fallback, not inheritance: the blocked
+    rule must NOT pick up the flat keys.
+    """
+    config = {
+        "use_slurm": True,
+        "project_path": str(tmp_path),
+        "slurm": {
+            "slurm_partition": "cpu",
+            "mem_mb": 8000,
+            "suite2p": {"slurm_partition": "gpu", "gres": "gpu:a4500:1"},
+        },
+    }
+
+    inject_slurm_log_paths(config)
+
+    unblocked = slurm_resources(config, "preprocessing")
+    blocked = slurm_resources(config, "suite2p")
+
+    assert "--output=" in unblocked["slurm_extra"]
+    assert "--output=" in blocked["slurm_extra"]
+    # The blocked rule uses its own block only -- no inheritance.
+    assert "mem_mb" not in blocked
+    assert blocked["slurm_partition"] == "gpu"

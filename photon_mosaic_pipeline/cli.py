@@ -365,9 +365,13 @@ def inject_slurm_log_paths(config):
         for key, block in slurm_config.items()
         if isinstance(block, dict) and not key.startswith("_")
     ]
-    # A flat slurm: block (no per-rule sub-blocks) applies to every rule, so
-    # the log paths belong on the block itself.
-    for block in rule_blocks or [slurm_config]:
+    # Every rule block, AND the flat keys. A config may be mixed -- some rules
+    # given their own block, the rest still falling back to the flat keys --
+    # which is the natural way to migrate one rule at a time. Injecting only
+    # into the sub-blocks would leave those un-blocked rules with resources but
+    # no --output/--error, so their sbatch logs would silently land in the
+    # working directory.
+    for block in [*rule_blocks, slurm_config]:
         block["slurm_extra"] = slurm_extra
 
     logger.info(f"SLURM logs will be saved to: {slurm_logdir}")
