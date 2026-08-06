@@ -166,7 +166,8 @@ def test_smk_file_resolves_resources_for_its_own_rule(smk_filename, rule_name):
 def test_shipped_config_has_a_block_for_every_rule():
     """Every rule in the workflow needs a block in the shipped config.
 
-    A rule with no block silently gets no resources -- so when a new rule is
+    A rule with no block silently requests nothing but its log paths, and is
+    submitted with whatever the cluster defaults to -- so when a new rule is
     added (dff, neuropil, cascade ...) this fails until its block exists.
     """
     workflow_dir = get_snakefile_path().parent
