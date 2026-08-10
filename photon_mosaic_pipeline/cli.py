@@ -309,6 +309,74 @@ def build_snakemake_command(args, config_path):
     return cmd
 
 
+def slurm_log_directory(config):
+    """Return (and create) the directory SLURM job logs are written to.
+
+    Parameters
+    ----------
+    config : dict
+        Configuration dictionary
+
+    Returns
+    -------
+    Path
+        The SLURM log directory.
+    """
+    slurm_logdir = (
+        Path(config["project_path"]).resolve()
+        / "derivatives"
+        / "photon-mosaic-pipeline"
+        / "logs"
+        / "slurm"
+    )
+    ensure_dir(slurm_logdir, mode=0o755, parents=True, exist_ok=True)
+    return slurm_logdir
+
+
+def inject_slurm_log_paths(config):
+    """Point each rule's ``slurm_extra`` at the SLURM log directory.
+
+    ``slurm_extra`` carries the sbatch ``--output``/``--error`` paths. Rules
+    read their resources from the *written* config file, so this has to happen
+    before the timestamped config is saved -- and it has to reach every rule's
+    block, since there are no default resources to fall back on.
+
+    Parameters
+    ----------
+    config : dict
+        Configuration dictionary. Modified in place.
+    """
+    logger = logging.getLogger(__name__)
+
+    if not config.get("use_slurm", False):
+        return
+
+    slurm_logdir = slurm_log_directory(config)
+
+    # %j = SLURM job ID, %x = job name (rule name)
+    slurm_extra = (
+        f"--output={slurm_logdir}/%j_%x.out "
+        f"--error={slurm_logdir}/%j_%x.err"
+    )
+
+    slurm_config = config.setdefault("slurm", {})
+    rule_blocks = [
+        block
+        for key, block in slurm_config.items()
+        if isinstance(block, dict) and not key.startswith("_")
+    ]
+    # Every rule block, AND the flat keys. A config may be mixed -- some rules
+    # given their own block, the rest still falling back to the flat keys --
+    # which is the natural way to migrate one rule at a time. Injecting only
+    # into the sub-blocks would leave those un-blocked rules with resources but
+    # no --output/--error, so their sbatch logs would silently land in the
+    # working directory.
+    for block in [*rule_blocks, slurm_config]:
+        block["slurm_extra"] = slurm_extra
+
+    logger.info(f"SLURM logs will be saved to: {slurm_logdir}")
+
+
 def configure_slurm_execution(cmd, config):
     """Configure SLURM execution options if enabled.
 
@@ -336,74 +404,15 @@ def configure_slurm_execution(cmd, config):
     # Keep SLURM logs after successful job completion
     cmd.append("--slurm-keep-successful-logs")
 
-    # Configure SLURM log directory to persist logs
-    project_path = Path(config["project_path"]).resolve()
-    slurm_logdir = (
-        project_path
-        / "derivatives"
-        / "photon-mosaic-pipeline"
-        / "logs"
-        / "slurm"
-    )
-    ensure_dir(slurm_logdir, mode=0o755, parents=True, exist_ok=True)
-
     # Use the dedicated --slurm-logdir flag to configure Snakemake's internal
     # logs
-    cmd.extend(["--slurm-logdir", str(slurm_logdir)])
+    cmd.extend(["--slurm-logdir", str(slurm_log_directory(config))])
 
-    logger.info(f"SLURM logs will be saved to: {slurm_logdir}")
-
-    # Add SLURM-specific arguments
-    slurm_config = config.get("slurm", {}).copy()
-
-    # Override slurm_extra to properly set SLURM stdout/stderr paths
-    # This ensures the actual sbatch output/error files go to the correct
-    # location
-    # %j = SLURM job ID, %x = job name (rule name)
-    slurm_config["slurm_extra"] = (
-        f"--output={slurm_logdir}/%j_%x.out "
-        f"--error={slurm_logdir}/%j_%x.err"
-    )
-
-    logger.info(f"Configuration loaded: {slurm_config}")
-
-    # Resources that should NOT be passed via --default-resources
-    # because they're already set at rule level and may cause conflicts
-    # (particularly gpu-related resources that can trigger TRES conflicts)
-    # Note: tasks_per_gpu is NOT excluded as it's needed
-    # to control --ntasks-per-gpu behavior
-    exclude_from_defaults = {"gpu", "gres", "cpus_per_gpu"}
-
-    # Create default resources string for SLURM by iterating all provided keys
-    default_resources = []
-    for key, value in slurm_config.items():
-        # Skip empty/null values
-        if value is None:
-            continue
-        # Skip resources that should only be set at rule level
-        if key in exclude_from_defaults:
-            logger.info(
-                f"Skipping {key} in --default-resources "
-                f"(set at rule level to avoid conflicts): {value}"
-            )
-            continue
-        # Quote string values so snakemake parses them correctly
-        if isinstance(value, str):
-            default_resources.append(f"{key}='{value}'")
-        # Use lower-case for booleans (true/false)
-        elif isinstance(value, bool):
-            default_resources.append(f"{key}={str(value).lower()}")
-        else:
-            default_resources.append(f"{key}={value}")
-
-        logger.info(f"Using SLURM {key}: {value}")
-
-    if default_resources:
-        # Join all default resources with commas and pass as single argument
-        resources_str = ",".join(default_resources)
-        cmd.extend(["--default-resources", resources_str])
-        logger.info(f"SLURM default resources: {resources_str}")
-
+    # No --default-resources: every rule reads its own block from the config
+    # (see snakemake_utils.slurm_resources), so there is nothing left for the
+    # defaults to supply. Snakemake fills defaults in only for resources a rule
+    # does not set, which would silently reintroduce values a rule left out.
+    logger.info(f"SLURM configuration: {config.get('slurm', {})}")
     logger.info("SLURM executor configured successfully")
     return cmd
 
@@ -540,6 +549,10 @@ def main():
     # Set up output directories
     project_path = Path(config["project_path"])
     output_dir, logs_dir, configs_dir = setup_output_directories(project_path)
+
+    # Point each rule's slurm_extra at the log directory. Must happen BEFORE
+    # the config is saved: the rules read their resources from that file.
+    inject_slurm_log_paths(config)
 
     # Save timestamped config for reproducibility
     timestamp, config_path = save_timestamped_config(config, configs_dir)

@@ -14,14 +14,14 @@ Output: Preprocessed TIFF files organized by subject/session
 
 from pathlib import Path
 from photon_mosaic_pipeline.rules.preprocessing import run_preprocessing
-from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
+from photon_mosaic_pipeline.snakemake_utils import (
+    cross_platform_path,
+    slurm_resources,
+)
 from photon_mosaic_pipeline.paths_selection import _RAWDATA, _DERIVATIVES
 import re
 import logging
 import os
-
-# Configure SLURM resources if enabled
-slurm_config = config.get("slurm", {}) if config.get("use_slurm") else {}
 
 
 def _get_raw_tiff_for_wildcards(wildcards):
@@ -76,7 +76,7 @@ rule preprocessing:
         subject_name="|".join(_subject_names),
         session_name="|".join(_session_names),
     resources:
-        **(slurm_config if config.get("use_slurm") else {}),
+        **slurm_resources(config, "preprocessing"),
     run:
         from photon_mosaic_pipeline.rules.preprocessing import run_preprocessing
 
