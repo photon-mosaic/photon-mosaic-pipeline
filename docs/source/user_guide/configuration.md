@@ -136,9 +136,11 @@ In order for SLURM jobs to be executed, you have to launch `photon-mosaic-pipeli
 
 #### Resources are set per rule
 
-The `slurm:` block holds **one sub-block per rule, named after the rule**, and a rule uses only its own block. Rules have genuinely different needs — `suite2p` wants a GPU, preprocessing is CPU-only — and one shared block means the CPU step requests a GPU it never uses and then waits in the GPU queue for it.
+Each step of the pipeline — each Snakemake *rule* — is sent to SLURM as its own job, and every job has to say what hardware it needs: which partition, how much memory, and so on. Different steps need different things: `suite2p` needs a GPU, preprocessing does not.
 
-Keys that really are the same everywhere go in a YAML anchor rather than being repeated. Keys starting with `_` are config scaffolding and are never passed to SLURM, which makes `_common` a safe place to hold one:
+So `slurm:` holds **one block per rule, named after the rule**, and a rule reads only its own block. If both steps shared one set of resources, preprocessing would ask for a GPU as well — and a job that asks for a GPU waits in the queue for one, so a step that never touches the GPU would sit waiting for it anyway.
+
+Repeating the settings that genuinely are the same in every block gets tedious, so write them once and reuse them. YAML does this on its own, with an anchor (`&common`) and a merge (`<<: *common`). Any key starting with `_` is ignored when the resources are read, which makes `_common` a safe place to keep the shared ones:
 
 ```yaml
 slurm:
@@ -159,9 +161,9 @@ slurm:
     mem_mb: 32000
 ```
 
-A key set in a rule's own block wins over the anchor, so `mem_mb` differs per rule while `runtime` is shared. Nothing else is inherited, so a rule never has to *remove* a resource it did not want. `slurm_account` is cluster-specific: replace the placeholder with your own account, or delete the line if your cluster does not require one.
+A rule's own keys win over the shared ones: above, `runtime` is the same everywhere while `mem_mb` differs. Apart from the anchor nothing is inherited — a rule gets exactly what its own block lists — so you never have to switch off something another rule asked for. `slurm_account` is specific to your cluster: replace the placeholder with your own account, or delete the line if your cluster does not need one.
 
-**Every rule needs a block.** A rule with no block of its own requests nothing but its log paths, and is submitted with whatever your cluster defaults to. If you add a rule, add its block. (A `slurm:` block with *no* per-rule sub-blocks at all still applies to every rule, so older flat configs keep working — except that `null` values and nested blocks are no longer forwarded as resources.)
+**Every rule needs a block.** A rule with no block of its own asks for nothing except its log paths, and is submitted with whatever your cluster gives it by default. If you add a rule, add its block. (A `slurm:` block written the old way, with no per-rule blocks inside it at all, still applies to every rule, so existing configs keep working — except that `null` values and nested blocks are no longer passed on as resources.)
 
 #### GPU resources: `gpu` vs `gres`
 
