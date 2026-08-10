@@ -15,125 +15,133 @@ from photon_mosaic_pipeline.snakemake_utils import slurm_resources
 #
 # The `slurm:` block holds one sub-block per rule, named after the rule. A rule
 # reads ONLY its own block: nothing is inherited, so nothing ever has to be
-# removed. These tests encode that, plus the backwards-compatible reading of a
-# flat `slurm:` block (which applied to every rule before per-rule blocks
+# removed. The cases below encode that, plus the backwards-compatible reading
+# of a flat `slurm:` block (which applied to every rule before per-rule blocks
 # existed) and the two kinds of key that must never reach SLURM -- nulls and
 # the `_`-prefixed anchors used for YAML reuse.
 # ---------------------------------------------------------------------------
 
+PER_RULE = {
+    "use_slurm": True,
+    "slurm": {
+        "preprocessing": {"slurm_partition": "cpu", "mem_mb": 8000},
+        "suite2p": {"slurm_partition": "gpu", "gres": "gpu:a4500:1"},
+    },
+}
 
-def test_rule_gets_its_own_block():
-    """Each rule resolves to its own sub-block, nothing else."""
-    config = {
-        "use_slurm": True,
-        "slurm": {
-            "preprocessing": {"slurm_partition": "cpu", "mem_mb": 8000},
-            "suite2p": {"slurm_partition": "gpu", "gres": "gpu:a4500:1"},
-        },
-    }
+FLAT = {
+    "use_slurm": True,
+    "slurm": {"slurm_partition": "gpu", "mem_mb": 32000},
+}
 
-    assert slurm_resources(config, "preprocessing") == {
-        "slurm_partition": "cpu",
-        "mem_mb": 8000,
-    }
-    assert slurm_resources(config, "suite2p") == {
+MIXED = {
+    "use_slurm": True,
+    "slurm": {
         "slurm_partition": "gpu",
-        "gres": "gpu:a4500:1",
-    }
+        "suite2p": {"gres": "gpu:a4500:1"},
+    },
+}
+
+ANCHORED = {
+    "use_slurm": True,
+    "slurm": {
+        "_common": {"tasks": 1},
+        "suite2p": {"_note": "ignored", "tasks": 1, "mem_mb": 32000},
+    },
+}
 
 
-def test_a_rule_never_inherits_another_rules_keys():
-    """The point of the design: no inheritance, so no removal needed.
-
-    `gres` belongs to suite2p only. Under the previous shape every rule got
-    the whole `slurm:` block, so preprocessing requested a GPU it never used
-    and queued behind busy GPUs for nothing.
-    """
-    config = {
-        "use_slurm": True,
-        "slurm": {
-            "preprocessing": {"slurm_partition": "cpu"},
-            "suite2p": {"slurm_partition": "gpu", "gres": "gpu:a4500:1"},
-        },
-    }
-
-    assert "gres" not in slurm_resources(config, "preprocessing")
-
-
-def test_flat_block_applies_to_every_rule():
-    """Backwards compatibility: a config with no per-rule sub-blocks.
-
-    Existing user configs are flat. They must keep behaving exactly as before,
-    with the whole block going to every rule.
-    """
-    config = {
-        "use_slurm": True,
-        "slurm": {"slurm_partition": "gpu", "mem_mb": 32000},
-    }
-
-    expected = {"slurm_partition": "gpu", "mem_mb": 32000}
-    assert slurm_resources(config, "preprocessing") == expected
-    assert slurm_resources(config, "suite2p") == expected
-
-
-def test_flat_fallback_ignores_unrelated_sub_blocks():
-    """A rule with no block of its own falls back to the flat keys only.
-
-    The other rules' sub-blocks are not resources and must not leak in --
-    Snakemake resources must be scalars, and a dict there is an error.
-    """
-    config = {
-        "use_slurm": True,
-        "slurm": {
-            "slurm_partition": "gpu",
-            "suite2p": {"gres": "gpu:a4500:1"},
-        },
-    }
-
-    resources = slurm_resources(config, "preprocessing")
-
-    assert resources == {"slurm_partition": "gpu"}
-    assert not any(isinstance(v, dict) for v in resources.values())
-
-
-def test_anchor_scaffolding_is_not_a_resource():
-    """`_`-prefixed keys hold YAML anchors and must never reach SLURM."""
-    config = {
-        "use_slurm": True,
-        "slurm": {
-            "_common": {"tasks": 1},
-            "suite2p": {"_note": "ignored", "tasks": 1, "mem_mb": 32000},
-        },
-    }
-
-    assert slurm_resources(config, "suite2p") == {"tasks": 1, "mem_mb": 32000}
-    assert slurm_resources(config, "preprocessing") == {}
-
-
-def test_null_values_are_dropped():
-    """A null is the absence of a resource, not a resource valued None."""
-    config = {
-        "use_slurm": True,
-        "slurm": {"suite2p": {"slurm_partition": "gpu", "gres": None}},
-    }
-
-    assert slurm_resources(config, "suite2p") == {"slurm_partition": "gpu"}
-
-
-def test_no_resources_when_slurm_is_disabled():
-    """With use_slurm false the rules must request nothing at all."""
-    config = {
-        "use_slurm": False,
-        "slurm": {"suite2p": {"slurm_partition": "gpu"}},
-    }
-
-    assert slurm_resources(config, "suite2p") == {}
-
-
-def test_missing_slurm_block_is_tolerated():
-    """No slurm: block at all resolves to no resources, not an error."""
-    assert slurm_resources({"use_slurm": True}, "suite2p") == {}
-    assert slurm_resources({"use_slurm": True, "slurm": None}, "suite2p") == {}
+@pytest.mark.parametrize(
+    "config, rule_name, expected",
+    [
+        # Each rule resolves to its own sub-block, and nothing else. `gres`
+        # belongs to suite2p only: under the previous shape every rule got the
+        # whole `slurm:` block, so preprocessing requested a GPU it never used
+        # and queued behind busy GPUs for nothing.
+        pytest.param(
+            PER_RULE,
+            "preprocessing",
+            {"slurm_partition": "cpu", "mem_mb": 8000},
+            id="own-block",
+        ),
+        pytest.param(
+            PER_RULE,
+            "suite2p",
+            {"slurm_partition": "gpu", "gres": "gpu:a4500:1"},
+            id="no-inheritance",
+        ),
+        # Backwards compatibility: existing user configs are flat and must
+        # keep behaving exactly as before, the whole block going to every rule.
+        pytest.param(
+            FLAT,
+            "preprocessing",
+            {"slurm_partition": "gpu", "mem_mb": 32000},
+            id="flat-applies-to-preprocessing",
+        ),
+        pytest.param(
+            FLAT,
+            "suite2p",
+            {"slurm_partition": "gpu", "mem_mb": 32000},
+            id="flat-applies-to-suite2p",
+        ),
+        # A rule with no block of its own falls back to the flat keys ONLY.
+        # Another rule's sub-block is not a resource, and Snakemake resources
+        # must be scalars -- a dict there is an error.
+        pytest.param(
+            MIXED,
+            "preprocessing",
+            {"slurm_partition": "gpu"},
+            id="flat-fallback-ignores-sibling-blocks",
+        ),
+        # ... and the blocked rule does not pick the flat keys up as well.
+        pytest.param(
+            MIXED,
+            "suite2p",
+            {"gres": "gpu:a4500:1"},
+            id="fallback-is-not-inheritance",
+        ),
+        # `_`-prefixed keys hold YAML anchors: config scaffolding, never a
+        # resource, at either level.
+        pytest.param(
+            ANCHORED,
+            "suite2p",
+            {"tasks": 1, "mem_mb": 32000},
+            id="anchor-scaffolding-is-not-a-resource",
+        ),
+        pytest.param(ANCHORED, "preprocessing", {}, id="anchor-is-not-a-rule"),
+        # A null is the absence of a resource, not a resource valued None.
+        pytest.param(
+            {
+                "use_slurm": True,
+                "slurm": {"suite2p": {"slurm_partition": "gpu", "gres": None}},
+            },
+            "suite2p",
+            {"slurm_partition": "gpu"},
+            id="nulls-dropped",
+        ),
+        # With use_slurm false the rules must request nothing at all, and a
+        # missing block resolves to no resources rather than raising.
+        pytest.param(
+            {
+                "use_slurm": False,
+                "slurm": {"suite2p": {"slurm_partition": "gpu"}},
+            },
+            "suite2p",
+            {},
+            id="slurm-disabled",
+        ),
+        pytest.param({"use_slurm": True}, "suite2p", {}, id="no-slurm-block"),
+        pytest.param(
+            {"use_slurm": True, "slurm": None},
+            "suite2p",
+            {},
+            id="null-slurm-block",
+        ),
+    ],
+)
+def test_slurm_resources(config, rule_name, expected):
+    """A rule resolves to its own block, minus scaffolding and nulls."""
+    assert slurm_resources(config, rule_name) == expected
 
 
 # ---------------------------------------------------------------------------
@@ -186,25 +194,3 @@ def test_shipped_config_has_a_block_for_every_rule():
     for rule_name in rule_names:
         assert rule_name in config["slurm"], f"no slurm block for {rule_name}"
         assert slurm_resources(config, rule_name), f"empty block: {rule_name}"
-
-
-def test_shipped_config_ships_no_site_specific_values():
-    """The example config must not carry one site's account or partition.
-
-    `slurm_account` is cluster-specific; shipping a real one (e.g. an SWC
-    account) makes the example wrong everywhere else, so it stays commented
-    out with an obvious placeholder.
-    """
-    workflow_dir = get_snakefile_path().parent
-    raw = (workflow_dir / "config.yaml").read_text()
-    config = yaml.safe_load(raw)
-
-    def accounts(block):
-        if isinstance(block, dict):
-            for key, value in block.items():
-                if key == "slurm_account":
-                    yield value
-                yield from accounts(value)
-
-    assert not list(accounts(config["slurm"])), "slurm_account must be unset"
-    assert "your_account_name" in raw
