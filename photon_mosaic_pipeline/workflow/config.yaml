@@ -202,5 +202,4 @@ slurm:
     # gpu: 1                 # Number of GPUs to request
     # gres: "gpu:a100:1"     # Alternative: Generic Resource (GRES) specification
     # cpus_per_gpu: 4        # CPUs allocated per GPU
-    # tasks_per_gpu: 0       # Tasks per GPU (set to 0 to disable --ntasks-per-gpu and avoid TRES conflicts)
     # mem_mb_per_cpu: 2000   # Memory per CPU (mutually exclusive with mem_mb)

@@ -71,10 +71,17 @@ suite2p_ops:
 # SLURM settings (one block per rule, named after the rule)
 use_slurm: false
 slurm:
+  _common: &common
+    tasks: 1
+    nodes: 1
+
   preprocessing:
+    <<: *common
     slurm_partition: "cpu"
     mem_mb: 8000
+
   suite2p:
+    <<: *common
     slurm_partition: "gpu"
     mem_mb: 32000
 ```
@@ -129,29 +136,9 @@ In order for SLURM jobs to be executed, you have to launch `photon-mosaic-pipeli
 
 #### Resources are set per rule
 
-The `slurm:` block holds **one sub-block per rule, named after the rule**. Each rule uses only its own block:
+The `slurm:` block holds **one sub-block per rule, named after the rule**, and a rule uses only its own block. Rules have genuinely different needs — `suite2p` wants a GPU, preprocessing is CPU-only — and one shared block means the CPU step requests a GPU it never uses and then waits in the GPU queue for it.
 
-```yaml
-slurm:
-  preprocessing:
-    slurm_partition: "cpu"
-    mem_mb: 8000
-
-  suite2p:
-    slurm_partition: "gpu"
-    gres: "gpu:a4500:1"
-    mem_mb: 32000
-```
-
-Rules have genuinely different needs — `suite2p` wants a GPU, preprocessing is CPU-only — and giving every rule the same resources means the CPU step requests a GPU it never uses and then waits in the GPU queue for it. With its own block, preprocessing goes straight to the CPU partition.
-
-Nothing is inherited between blocks, so a rule never has to *remove* a resource it did not want.
-
-**Every rule needs a block.** A rule with no block of its own requests nothing but its log paths, and will be submitted with whatever your cluster defaults to. If you add a rule, add its block.
-
-#### Sharing keys between rules
-
-For keys that really are the same everywhere, use a YAML anchor rather than repeating them. Define them once under a key starting with `_` (keys starting with `_` are treated as config scaffolding and are never passed to SLURM), then pull them in with `<<:`:
+Keys that really are the same everywhere go in a YAML anchor rather than being repeated. Keys starting with `_` are config scaffolding and are never passed to SLURM, which makes `_common` a safe place to hold one:
 
 ```yaml
 slurm:
@@ -172,19 +159,13 @@ slurm:
     mem_mb: 32000
 ```
 
-A key set in a rule's own block wins over the anchor, so `mem_mb` above differs per rule while `runtime` is shared.
+A key set in a rule's own block wins over the anchor, so `mem_mb` differs per rule while `runtime` is shared. Nothing else is inherited, so a rule never has to *remove* a resource it did not want. `slurm_account` is cluster-specific: replace the placeholder with your own account, or delete the line if your cluster does not require one.
 
-`slurm_account` is specific to your cluster — the shipped config leaves it commented out with a placeholder. Replace `your_account_name` with your own account, or delete the line if your cluster does not require one.
-
-#### Older, flat configs
-
-A `slurm:` block with no per-rule sub-blocks still applies to every rule, so existing configs keep working and per-rule blocks are opt-in. Two small differences from before: `null` values and any nested blocks are no longer passed to SLURM as resources.
-
-You can also migrate one rule at a time — give a rule its own block and leave the rest on the flat keys. A rule with its own block uses **only** that block; it does not pick up the flat keys as well.
+**Every rule needs a block.** A rule with no block of its own requests nothing but its log paths, and is submitted with whatever your cluster defaults to. If you add a rule, add its block. (A `slurm:` block with *no* per-rule sub-blocks at all still applies to every rule, so older flat configs keep working — except that `null` values and nested blocks are no longer forwarded as resources.)
 
 #### GPU resources: `gpu` vs `gres`
 
-The Snakemake SLURM executor plugin offers **two mutually exclusive ways** to request a GPU. You have to pick one! Combining them produces TRES (Trackable RESources) conflicts at the scheduler. Put them in the block of the rule that needs the GPU — usually `suite2p` — so that no other rule requests one.
+The Snakemake SLURM executor plugin offers **two mutually exclusive ways** to request a GPU, because `--gpus` and `--gres` describe the same TRES (Trackable RESource) two different ways, and asking for both is ambiguous. You have to pick one! Set both and Snakemake refuses to build the submission at all, with `GRES and GPU are set. Please only set one of them.` Put the key in the block of the rule that needs the GPU — usually `suite2p` — so that no other rule requests one.
 
 - **`gpu`**: request a number of GPUs of any type. The plugin translates this into `--gpus`. Pair with `cpus_per_gpu` if needed.
 
