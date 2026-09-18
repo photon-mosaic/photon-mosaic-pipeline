@@ -30,11 +30,25 @@ if os.environ.get("CI"):
 
 @pytest.fixture
 def run_photon_mosaic_pipeline():
-    def inner_run_photon_mosaic_pipeline(workdir, configfile, timeout=None):
-        """Helper function to run photon-mosaic-pipeline CLI with dry-run.
+    def inner_run_photon_mosaic_pipeline(
+        workdir, configfile, dry_run=False, timeout=None
+    ):
+        """Run the photon-mosaic-pipeline CLI in a subprocess.
+
+        dry_run: pass ``--dry-run``, so snakemake resolves the DAG and
+        lists the jobs it would run without executing any of them. This
+        docstring used to claim the helper always dry-ran, but it never
+        passed the flag -- so the "dry run" test ran the whole pipeline,
+        one of the costs identified in issue #74.
 
         timeout: seconds to wait for the subprocess to complete. If None,
         wait indefinitely (no timeout).
+
+        Assert on read_snakemake_log() and on the output files, not on
+        ``result.returncode``: the CLI redirects snakemake's own output to
+        a log file under derivatives/photon-mosaic-pipeline/logs/, and
+        cli.main() logs snakemake's exit code without propagating it, so
+        the CLI exits 0 even when the workflow fails.
         """
         cmd = [
             "photon-mosaic-pipeline",
@@ -42,7 +56,14 @@ def run_photon_mosaic_pipeline():
             str(configfile),
             "--log-level",
             "DEBUG",
+            # Load-bearing: without it the CLI adds --quiet, and
+            # snakemake's default quietness hides both the job listing the
+            # dry-run assertions count and the "Error in rule" line
+            # assert_no_workflow_error looks for.
+            "--verbose",
         ]
+        if dry_run:
+            cmd.append("--dry-run")
 
         result = subprocess.run(
             cmd,
