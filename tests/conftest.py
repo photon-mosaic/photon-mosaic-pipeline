@@ -196,8 +196,27 @@ def snake_test_env(tmp_path, base_config, data_factory):
     print("\n=== Setting up test environment ===")
     print(f"Temporary directory: {tmp_path}")
 
-    # Use factory to create NeuroBlueprint dataset structure dynamically
-    raw_data = data_factory.create_neuroblueprint_dataset(tmp_path)
+    # Use factory to create NeuroBlueprint dataset structure dynamically.
+    # Deliberately smaller than the factory default (5 subjects / 11
+    # sessions): every session here gets a real suite2p + cellpose-SAM run,
+    # which dominates CI time (issue #74). Two subjects with one and two
+    # sessions still exercise multi-subject and multi-session DAGs. The
+    # factory default is untouched, so the dataset-discovery tests keep
+    # their richer tree.
+    raw_data = data_factory.create_neuroblueprint_dataset(
+        tmp_path,
+        subjects=[
+            {"id": "001", "strain": "C57BL6", "sex": "M"},
+            {"id": "002", "strain": "BALBC", "sex": "F"},
+        ],
+        sessions_per_subject=[
+            [{"id": "001", "date": "20250225", "protocol": "training"}],
+            [
+                {"id": "001", "date": "20250226", "protocol": "test"},
+                {"id": "003", "date": "20250227", "protocol": "test"},
+            ],
+        ],
+    )
     print(f"Raw data directory: {raw_data}")
     print(f"Raw data contents after creation: {list(raw_data.glob('**/*'))}")
 
