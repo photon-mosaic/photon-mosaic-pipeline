@@ -7,6 +7,7 @@ right answer is analytically known.
 """
 
 import numpy as np
+import pytest
 
 from photon_mosaic_pipeline.rules.dff_run import calculate_dFF, dFF
 from photon_mosaic_pipeline.rules.neuropil_run import (
@@ -106,6 +107,36 @@ def test_calculate_dFF_writes_dFF_and_F0(tmp_path):
     assert dff_loaded.shape == fc.shape
 
 
+def test_calculate_dFF_dset_separated_writes_per_dataset_files(tmp_path):
+    """When a dset_separated/ folder exists next to Fc.npy (split_multitiff
+    output), dFF_dsetN.npy/F0_dsetN.npy are additionally written for each
+    Fc_dsetN.npy found there."""
+    rng = np.random.default_rng(0)
+
+    input_path = tmp_path / "Fc.npy"
+    np.save(input_path, 50.0 + rng.standard_normal((2, 200)))
+
+    dset_dir = tmp_path / "dset_separated"
+    dset_dir.mkdir()
+    np.save(dset_dir / "Fc_dset0.npy", 50.0 + rng.standard_normal((2, 100)))
+    np.save(dset_dir / "Fc_dset1.npy", 50.0 + rng.standard_normal((2, 80)))
+
+    output_path = tmp_path / "dff" / "plane0" / "dFF.npy"
+
+    calculate_dFF(
+        str(input_path),
+        str(output_path),
+        {"gmm_ncomponents": 2},
+    )
+
+    out_dset_dir = output_path.parent / "dset_separated"
+    for idx, n_frames in enumerate((100, 80)):
+        dff_i = np.load(out_dset_dir / f"dFF_dset{idx}.npy")
+        f0_i = np.load(out_dset_dir / f"F0_dset{idx}.npy")
+        assert dff_i.shape == (2, n_frames)
+        assert f0_i.shape == (2, 1)
+
+
 # ---------------------------------------------------------------------------
 # Neuropil correction
 # ---------------------------------------------------------------------------
@@ -181,3 +212,71 @@ def test_neuropil_correction_per_neuron_median(tmp_path):
     Fc = np.load(out_path)
     assert np.allclose(Fc[0], 0.0)
     assert np.allclose(Fc[1], -(Fneu[1] - 100.0))
+
+
+def test_neuropil_correction_dset_separated_writes_per_dataset_files(tmp_path):
+    """When a dset_separated/ folder exists next to F.npy (split_multitiff
+    output, see suite2p_run.split_suite2p_output), per-dataset
+    Fc_dsetN.npy files are additionally written -- each corrected
+    independently against its own F_dsetN/Fneu_dsetN pair."""
+    plane_dir = tmp_path / "suite2p" / "plane0"
+    dset_dir = plane_dir / "dset_separated"
+    dset_dir.mkdir(parents=True)
+
+    F = np.array([[100.0, 100.0, 100.0]])
+    Fneu = np.array([[10.0, 20.0, 30.0]])
+    f_path = plane_dir / "F.npy"
+    fneu_path = plane_dir / "Fneu.npy"
+    np.save(f_path, F)
+    np.save(fneu_path, Fneu)
+
+    F_dset0 = np.array([[100.0, 100.0]])
+    Fneu_dset0 = np.array([[10.0, 30.0]])  # median 20
+    F_dset1 = np.array([[100.0]])
+    Fneu_dset1 = np.array([[50.0]])  # median 50
+    np.save(dset_dir / "F_dset0.npy", F_dset0)
+    np.save(dset_dir / "Fneu_dset0.npy", Fneu_dset0)
+    np.save(dset_dir / "F_dset1.npy", F_dset1)
+    np.save(dset_dir / "Fneu_dset1.npy", Fneu_dset1)
+
+    out_path = tmp_path / "neuropil" / "plane0" / "Fc.npy"
+    neucoeff = 0.5
+
+    calculate_neuropil_correction(
+        str(f_path),
+        str(fneu_path),
+        str(out_path),
+        {"neucoeff": neucoeff},
+    )
+
+    out_dset_dir = out_path.parent / "dset_separated"
+    expected_dset0 = F_dset0 - neucoeff * (Fneu_dset0 - 20.0)
+    expected_dset1 = F_dset1 - neucoeff * (Fneu_dset1 - 50.0)
+    assert np.allclose(np.load(out_dset_dir / "Fc_dset0.npy"), expected_dset0)
+    assert np.allclose(np.load(out_dset_dir / "Fc_dset1.npy"), expected_dset1)
+
+
+def test_neuropil_correction_dset_separated_missing_fneu_raises(tmp_path):
+    """An incomplete dset_separated/ folder (F_dsetN.npy without its
+    matching Fneu_dsetN.npy) is a hard error, not silently skipped."""
+    plane_dir = tmp_path / "suite2p" / "plane0"
+    dset_dir = plane_dir / "dset_separated"
+    dset_dir.mkdir(parents=True)
+
+    F = np.array([[100.0]])
+    Fneu = np.array([[10.0]])
+    f_path = plane_dir / "F.npy"
+    fneu_path = plane_dir / "Fneu.npy"
+    np.save(f_path, F)
+    np.save(fneu_path, Fneu)
+    np.save(dset_dir / "F_dset0.npy", F)  # no matching Fneu_dset0.npy
+
+    out_path = tmp_path / "neuropil" / "plane0" / "Fc.npy"
+
+    with pytest.raises(FileNotFoundError):
+        calculate_neuropil_correction(
+            str(f_path),
+            str(fneu_path),
+            str(out_path),
+            {"neucoeff": 0.5},
+        )

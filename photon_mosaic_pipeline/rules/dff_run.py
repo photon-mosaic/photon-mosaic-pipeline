@@ -17,7 +17,6 @@ def calculate_dFF(
     user_ops_dict: dict,
 ) -> None:
     """Calculate dF/F from neuropil-corrected fluorescence traces.
-
     Takes Fc.npy (output of neuropil correction) and computes dF/F
     using a Gaussian Mixture Model to estimate baseline F0.
     Saves dFF.npy and F0.npy to the output directory.
@@ -31,12 +30,13 @@ def calculate_dFF(
     user_ops_dict : dict
         Dictionary of options. Must contain 'gmm_ncomponents'.
     """
+    path_Fc = Path(input_path_Fc)
     save_folder = Path(output_path).parent
     save_folder.mkdir(parents=True, exist_ok=True)
 
     logger.info("Calculating dF/F...")
 
-    Fc = np.load(input_path_Fc)
+    Fc = np.load(path_Fc)
     n_components = user_ops_dict["gmm_ncomponents"]
 
     logger.info(f"n components for dFF calculation: {n_components}")
@@ -45,6 +45,26 @@ def calculate_dFF(
 
     np.save(save_folder / "dFF.npy", dff)
     np.save(save_folder / "F0.npy", f0)
+    logger.info(f"Saved dF/F traces to {save_folder / 'dFF.npy'}")
+
+    dset_dir = path_Fc.parent / "dset_separated"
+    if not dset_dir.is_dir():
+        return
+
+    out_dset_dir = save_folder / "dset_separated"
+    out_dset_dir.mkdir(parents=True, exist_ok=True)
+
+    for fc_file in sorted(dset_dir.glob("Fc_dset*.npy")):
+        # "Fc_dset0.npy" -> "0"
+        idx = fc_file.stem[len("Fc_dset") :]
+
+        dff_i, f0_i = dFF(np.load(fc_file), n_components=n_components)
+
+        np.save(out_dset_dir / f"dFF_dset{idx}.npy", dff_i)
+        np.save(out_dset_dir / f"F0_dset{idx}.npy", f0_i)
+        logger.info(
+            f"Saved dF/F traces to {out_dset_dir / f'dFF_dset{idx}.npy'}"
+        )
 
 
 def dFF(f, n_components=2, random_state=42):

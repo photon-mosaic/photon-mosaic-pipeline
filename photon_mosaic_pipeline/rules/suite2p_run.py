@@ -7,6 +7,7 @@ import traceback
 from pathlib import Path
 from typing import Optional
 
+import numpy as np
 from suite2p import run_s2p
 from suite2p.default_ops import default_ops
 
@@ -69,6 +70,9 @@ def run_suite2p(
 
     _force_cellpose_cpu_if_requested()
 
+    user_ops_dict = dict(user_ops_dict) if user_ops_dict else {}
+    split_multitiff = user_ops_dict.pop("split_multitiff", False) # suite2p native behavior
+
     ops = get_edited_options(
         input_path=dataset_folder,
         save_folder=save_folder,
@@ -76,6 +80,8 @@ def run_suite2p(
     )
     try:
         run_s2p(ops=ops)
+        if split_multitiff:
+            split_suite2p_output(save_folder)
     except Exception as e:
         with open(dataset_folder / "error.txt", "a") as f:
             f.write(f"Error: {e}\n")
@@ -128,3 +134,46 @@ def get_edited_options(
     ops["data_path"] = [str(input_path)]
 
     return ops
+
+
+def split_suite2p_output(save_folder: Path):
+    save_folder = Path(save_folder)
+
+    for plane_dir in sorted(save_folder.glob("plane*")):
+        ops_path = plane_dir / "ops.npy"
+        if not ops_path.exists():
+            continue
+
+        ops = np.load(ops_path, allow_pickle=True).item()
+        frames_per_file = ops.get("frames_per_file")
+
+        if frames_per_file is None or len(frames_per_file) <= 1:
+            continue
+
+        boundaries = np.cumsum([0] + list(frames_per_file))
+
+        F = np.load(plane_dir / "F.npy")
+        Fneu = np.load(plane_dir / "Fneu.npy")
+        spks = np.load(plane_dir / "spks.npy")
+        stat = np.load(plane_dir / "stat.npy", allow_pickle=True)
+        iscell = np.load(plane_dir / "iscell.npy")
+
+        if boundaries[-1] != F.shape[1]:
+            raise ValueError(
+                f"Sum of frames_per_file ({boundaries[-1]}) does not match "
+                f"F.shape[1] ({F.shape[1]}) in {plane_dir}."
+            )
+
+        out_dir = plane_dir / "dset_separated"
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        for i, (start, end) in enumerate(zip(boundaries[:-1], boundaries[1:])):
+            np.save(out_dir / f"F_dset{i}.npy", F[:, start:end])
+            np.save(out_dir / f"Fneu_dset{i}.npy", Fneu[:, start:end])
+            np.save(out_dir / f"spks_dset{i}.npy", spks[:, start:end])
+            np.save(out_dir / f"stat_dset{i}.npy", stat)
+            np.save(out_dir / f"iscell_dset{i}.npy", iscell)
+
+            ops_split = dict(ops)
+            ops_split["nframes"] = int(end - start)
+            np.save(out_dir / f"ops_dset{i}.npy", ops_split)

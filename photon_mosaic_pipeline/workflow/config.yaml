@@ -84,6 +84,7 @@ suite2p_ops:
   move_bin: false  # Move binary file to save_disk
   save_mat: false  # Save results in matlab format
   save_NWB: false  # Save output as NWB file
+  split_multitiff: false # Split output of multiple tiffs
 
   # Acquisition parameters
   nplanes: 1  # Number of planes per tiff

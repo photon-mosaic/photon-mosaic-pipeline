@@ -32,17 +32,46 @@ def calculate_neuropil_correction(
     user_ops_dict : dict
         Dictionary of options. Must contain 'neucoeff'.
     """
-    save_folder = Path(output_path).parent
+    F_path = Path(input_path_F)
+    Fneu_path = Path(input_path_Fneu)
+    out_path = Path(output_path)
+
+    save_folder = out_path.parent
     save_folder.mkdir(parents=True, exist_ok=True)
 
-    logger.info("Applying neuropil correction...")
+    logger.info("Applying neuropil correction using coefficient...")
+    neucoeff = user_ops_dict["neucoeff"]
+    F = np.load(F_path)
+    Fneu = np.load(Fneu_path)
+    Fc = _apply_neuropil_correction(F, Fneu, neucoeff)
 
-    F = np.load(input_path_F)
-    Fneu = np.load(input_path_Fneu)
+    np.save(out_path, Fc)
+    logger.info(f"Saved neuropil-corrected traces to {out_path}")
 
-    Fc = F - user_ops_dict["neucoeff"] * (
-        Fneu - np.median(Fneu, axis=1)[:, None]
-    )
+    # Also correct any per-dataset split traces, if present.
+    dset_dir = F_path.parent / "dset_separated"
+    if not dset_dir.is_dir():
+        return
 
-    np.save(output_path, Fc)
-    logger.info(f"Saved neuropil-corrected traces to {output_path}")
+    out_dset_dir = out_path.parent / "dset_separated"
+    out_dset_dir.mkdir(parents=True, exist_ok=True)
+
+    for f_file in sorted(dset_dir.glob("F_dset*.npy")):
+        # "F_dset0.npy" -> "0"
+        idx = f_file.stem[len("F_dset") :]
+        fneu_file = dset_dir / f"Fneu_dset{idx}.npy"
+
+        F_i = np.load(f_file)
+        Fneu_i = np.load(fneu_file)
+        Fc_i = _apply_neuropil_correction(F_i, Fneu_i, neucoeff)
+
+        out_file = out_dset_dir / f"Fc_dset{idx}.npy"
+        np.save(out_file, Fc_i)
+        logger.info(f"Saved neuropil-corrected traces to {out_file}")
+
+
+def _apply_neuropil_correction(
+    F: np.ndarray, Fneu: np.ndarray, neucoeff: float
+) -> np.ndarray:
+    """Core correction: Fc = F - neucoeff * (Fneu - median(Fneu))."""
+    return F - neucoeff * (Fneu - np.median(Fneu, axis=1)[:, None])
