@@ -10,6 +10,17 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 def _save_split_neuropil_correction(save_folder: Path, dset_dir: Path, neucoeff: float) -> None:
+    """Save neuropil-corrected traces for each dataset split.
+
+    Parameters
+    ----------
+    save_folder : Path
+        Folder where the corrected traces will be saved.
+    dset_dir : Path
+        Directory containing the split dataset traces.
+    neucoeff : float
+        Neuropil correction coefficient.
+    """
 
     out_dset_dir = save_folder / "dset_separated"
     out_dset_dir.mkdir(parents=True, exist_ok=True)

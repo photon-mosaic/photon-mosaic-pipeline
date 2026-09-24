@@ -11,6 +11,17 @@ from sklearn import mixture
 logger = logging.getLogger(__name__)
 
 def _save_split_dFF(save_folder: Path, dset_dir: Path, n_components: int) -> None:
+    """Save dF/F traces for each dataset split.
+
+    Parameters
+    ----------
+    save_folder : Path
+        Folder where the dF/F traces will be saved.
+    dset_dir : Path
+        Directory containing the split dataset Fc traces.
+    n_components : int
+        Number of components for the Gaussian Mixture Model.
+    """
     out_dset_dir = save_folder / "dset_separated"
     out_dset_dir.mkdir(parents=True, exist_ok=True)
 
