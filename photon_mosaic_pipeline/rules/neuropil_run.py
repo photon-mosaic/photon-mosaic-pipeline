@@ -9,7 +9,10 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-def _save_split_neuropil_correction(save_folder: Path, dset_dir: Path, neucoeff: float) -> None:
+
+def _save_split_neuropil_correction(
+    save_folder: Path, dset_dir: Path, neucoeff: float
+) -> None:
     """Save neuropil-corrected traces for each dataset split.
 
     Parameters

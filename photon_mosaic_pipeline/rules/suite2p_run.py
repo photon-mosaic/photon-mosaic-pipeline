@@ -6,9 +6,13 @@ import os
 import traceback
 from pathlib import Path
 from typing import Optional
+
 from suite2p import run_s2p
 from suite2p.default_ops import default_ops
-from photon_mosaic_pipeline.rules.split_suite2p_output import split_suite2p_output
+
+from photon_mosaic_pipeline.rules.split_suite2p_output import (
+    split_suite2p_output,
+)
 
 
 def _force_cellpose_cpu_if_requested():
@@ -70,7 +74,7 @@ def run_suite2p(
     _force_cellpose_cpu_if_requested()
 
     user_ops_dict = dict(user_ops_dict) if user_ops_dict else {}
-    
+
     # suite2p native behavior
     split_multitiff = user_ops_dict.pop("split_multitiff", False)
 
@@ -135,4 +139,3 @@ def get_edited_options(
     ops["data_path"] = [str(input_path)]
 
     return ops
-

@@ -1,8 +1,8 @@
 import shutil
-
-import numpy as np
 from pathlib import Path
 from typing import Optional
+
+import numpy as np
 
 
 def _get_ops(plane_dir: Path) -> Optional[dict]:
@@ -41,7 +41,9 @@ def _split_boundaries(ops: dict) -> Optional[np.ndarray]:
     return np.cumsum([0, *frames_per_file])
 
 
-def _check_total_frames(boundaries: np.ndarray, F: np.ndarray, plane_dir: Path) -> None:
+def _check_total_frames(
+    boundaries: np.ndarray, F: np.ndarray, plane_dir: Path
+) -> None:
     """Raise if frames_per_file's total doesn't match F's frame count.
 
     Parameters
@@ -63,6 +65,7 @@ def _check_total_frames(boundaries: np.ndarray, F: np.ndarray, plane_dir: Path) 
             f"F.shape[1] ({F.shape[1]}) in {plane_dir}."
         )
 
+
 def _open_suite2p_outputs(plane_dir: Path) -> dict:
     """Open the main Suite2p output arrays for a given plane directory.
     Parameters
@@ -75,7 +78,11 @@ def _open_suite2p_outputs(plane_dir: Path) -> dict:
         A dictionary containing the main Suite2p output arrays.
     """
     names = ("F", "Fneu", "spks", "stat", "iscell")
-    return {name: np.load(plane_dir / f"{name}.npy", allow_pickle=True) for name in names}
+    return {
+        name: np.load(plane_dir / f"{name}.npy", allow_pickle=True)
+        for name in names
+    }
+
 
 def _save_split_chunk(
     out_dir: Path, i: int, start: int, end: int, arrays: dict, ops: dict
@@ -109,13 +116,15 @@ def split_suite2p_output(save_folder: Path) -> None:
     Parameters
     ----------
     save_folder : Path
-        The folder containing the plane directories with combined Suite2p outputs.
+        The folder containing the plane directories with combined Suite2p
+        outputs.
     Returns
     -------
     None
-        The function saves the split Suite2p outputs into separate directories for each plane.
+        The function saves the split Suite2p outputs into separate
+        directories for each plane.
     """
-    
+
     for plane_dir in sorted(save_folder.glob("plane*")):
         ops = _get_ops(plane_dir)
         if ops is None:

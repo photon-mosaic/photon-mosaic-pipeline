@@ -7,8 +7,12 @@ import numpy as np
 import pytest
 
 from photon_mosaic_pipeline.rules.dff_run import calculate_dFF
-from photon_mosaic_pipeline.rules.neuropil_run import calculate_neuropil_correction
-from photon_mosaic_pipeline.rules.split_suite2p_output import split_suite2p_output
+from photon_mosaic_pipeline.rules.neuropil_run import (
+    calculate_neuropil_correction,
+)
+from photon_mosaic_pipeline.rules.split_suite2p_output import (
+    split_suite2p_output,
+)
 
 
 def _write_suite2p_plane(plane_dir, frames_per_file, n_rois=2, seed=0):
@@ -122,9 +126,13 @@ def test_split_keeps_multiple_planes_independent(tmp_path):
     out0 = plane0 / "dset_separated"
     out1 = plane1 / "dset_separated"
     assert np.array_equal(np.load(out0 / "F_dset0.npy"), source0["F"][:, :10])
-    assert np.array_equal(np.load(out0 / "F_dset1.npy"), source0["F"][:, 10:30])
+    assert np.array_equal(
+        np.load(out0 / "F_dset1.npy"), source0["F"][:, 10:30]
+    )
     assert np.array_equal(np.load(out1 / "F_dset0.npy"), source1["F"][:, :15])
-    assert np.array_equal(np.load(out1 / "F_dset1.npy"), source1["F"][:, 15:20])
+    assert np.array_equal(
+        np.load(out1 / "F_dset1.npy"), source1["F"][:, 15:20]
+    )
 
 
 def test_split_single_tiff_is_a_noop(tmp_path):

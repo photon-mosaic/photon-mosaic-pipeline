@@ -10,7 +10,10 @@ from sklearn import mixture
 
 logger = logging.getLogger(__name__)
 
-def _save_split_dFF(save_folder: Path, dset_dir: Path, n_components: int) -> None:
+
+def _save_split_dFF(
+    save_folder: Path, dset_dir: Path, n_components: int
+) -> None:
     """Save dF/F traces for each dataset split.
 
     Parameters
@@ -77,7 +80,6 @@ def calculate_dFF(
     dset_dir = path_Fc.parent / "dset_separated"
     if dset_dir.is_dir():
         _save_split_dFF(save_folder, dset_dir, n_components)
-
 
 
 def dFF(f, n_components=2, random_state=42):
