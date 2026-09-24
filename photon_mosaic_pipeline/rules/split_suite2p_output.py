@@ -1,3 +1,5 @@
+import shutil
+
 import numpy as np
 from pathlib import Path
 from typing import Optional
@@ -126,7 +128,10 @@ def split_suite2p_output(save_folder: Path) -> None:
         _check_total_frames(boundaries, outputs["F"], plane_dir)
 
         out_dir = plane_dir / "dset_separated"
-        out_dir.mkdir(parents=True, exist_ok=True)
+
+        if out_dir.exists():
+            shutil.rmtree(out_dir)
+        out_dir.mkdir(parents=True)
 
         for i, (start, end) in enumerate(zip(boundaries[:-1], boundaries[1:])):
             _save_split_chunk(out_dir, i, start, end, outputs, ops)
