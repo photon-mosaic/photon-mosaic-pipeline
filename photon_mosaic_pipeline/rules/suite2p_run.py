@@ -70,7 +70,9 @@ def run_suite2p(
     _force_cellpose_cpu_if_requested()
 
     user_ops_dict = dict(user_ops_dict) if user_ops_dict else {}
-    split_multitiff = user_ops_dict.pop("split_multitiff", False) # suite2p native behavior
+    
+    # suite2p native behavior
+    split_multitiff = user_ops_dict.pop("split_multitiff", False)
 
     ops = get_edited_options(
         input_path=dataset_folder,
