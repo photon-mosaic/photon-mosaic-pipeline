@@ -11,6 +11,36 @@ from sklearn import mixture
 logger = logging.getLogger(__name__)
 
 
+def _save_split_dFF(
+    save_folder: Path, dset_dir: Path, n_components: int
+) -> None:
+    """Save dF/F traces for each dataset split.
+
+    Parameters
+    ----------
+    save_folder : Path
+        Folder where the dF/F traces will be saved.
+    dset_dir : Path
+        Directory containing the split dataset Fc traces.
+    n_components : int
+        Number of components for the Gaussian Mixture Model.
+    """
+    out_dset_dir = save_folder / "dset_separated"
+    out_dset_dir.mkdir(parents=True, exist_ok=True)
+
+    for fc_file in sorted(dset_dir.glob("Fc_dset*.npy")):
+        # "Fc_dset0.npy" -> "0"
+        idx = fc_file.stem[len("Fc_dset") :]
+
+        dff_i, f0_i = dFF(np.load(fc_file), n_components=n_components)
+
+        np.save(out_dset_dir / f"dFF_dset{idx}.npy", dff_i)
+        np.save(out_dset_dir / f"F0_dset{idx}.npy", f0_i)
+        logger.info(
+            f"Saved dF/F traces to {out_dset_dir / f'dFF_dset{idx}.npy'}"
+        )
+
+
 def calculate_dFF(
     input_path_Fc: str,
     output_path: str,
@@ -48,23 +78,8 @@ def calculate_dFF(
     logger.info(f"Saved dF/F traces to {save_folder / 'dFF.npy'}")
 
     dset_dir = path_Fc.parent / "dset_separated"
-    if not dset_dir.is_dir():
-        return
-
-    out_dset_dir = save_folder / "dset_separated"
-    out_dset_dir.mkdir(parents=True, exist_ok=True)
-
-    for fc_file in sorted(dset_dir.glob("Fc_dset*.npy")):
-        # "Fc_dset0.npy" -> "0"
-        idx = fc_file.stem[len("Fc_dset") :]
-
-        dff_i, f0_i = dFF(np.load(fc_file), n_components=n_components)
-
-        np.save(out_dset_dir / f"dFF_dset{idx}.npy", dff_i)
-        np.save(out_dset_dir / f"F0_dset{idx}.npy", f0_i)
-        logger.info(
-            f"Saved dF/F traces to {out_dset_dir / f'dFF_dset{idx}.npy'}"
-        )
+    if dset_dir.is_dir():
+        _save_split_dFF(save_folder, dset_dir, n_components)
 
 
 def dFF(f, n_components=2, random_state=42):
