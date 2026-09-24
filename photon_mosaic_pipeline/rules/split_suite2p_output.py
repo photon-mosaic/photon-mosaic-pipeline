@@ -72,13 +72,8 @@ def _open_suite2p_outputs(plane_dir: Path) -> dict:
     dict
         A dictionary containing the main Suite2p output arrays.
     """
-    return {
-        "F": np.load(plane_dir / "F.npy"),
-        "Fneu": np.load(plane_dir / "Fneu.npy"),
-        "spks": np.load(plane_dir / "spks.npy"),
-        "stat": np.load(plane_dir / "stat.npy", allow_pickle=True),
-        "iscell": np.load(plane_dir / "iscell.npy"),
-    }
+    names = ("F", "Fneu", "spks", "stat", "iscell")
+    return {name: np.load(plane_dir / f"{name}.npy", allow_pickle=True) for name in names}
 
 def _save_split_chunk(
     out_dir: Path, i: int, start: int, end: int, arrays: dict, ops: dict
@@ -118,6 +113,7 @@ def split_suite2p_output(save_folder: Path) -> None:
     None
         The function saves the split Suite2p outputs into separate directories for each plane.
     """
+    
     for plane_dir in sorted(save_folder.glob("plane*")):
         ops = _get_ops(plane_dir)
         if ops is None:
