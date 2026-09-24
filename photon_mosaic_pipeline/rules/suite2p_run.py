@@ -6,8 +6,6 @@ import os
 import traceback
 from pathlib import Path
 from typing import Optional
-
-import numpy as np
 from suite2p import run_s2p
 from suite2p.default_ops import default_ops
 from photon_mosaic_pipeline.rules.split_suite2p_output import split_suite2p_output
