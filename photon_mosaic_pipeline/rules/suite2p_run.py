@@ -136,9 +136,18 @@ def get_edited_options(
     return ops
 
 
-def split_suite2p_output(save_folder: Path):
-    save_folder = Path(save_folder)
+def split_suite2p_output(save_folder: Path) -> None:
+    """Split each plane's combined Suite2p output back into one set of
+    files per raw TIFF that Suite2p combined into it.
 
+    Does nothing for a plane where Suite2p only saw one TIFF
+    (``frames_per_file`` absent or length 1 -- nothing to split).
+    Otherwise, for each chunk ``i`` in ``frames_per_file``, writes
+    ``dset_separated/{name}_dset{i}.npy``: ``F``/``Fneu``/``spks`` sliced
+    to that chunk's frames, ``stat``/``iscell`` copied as-is (they describe
+    ROIs, not frames, so they're identical across chunks), and ``ops``
+    copied with ``nframes`` updated to that chunk's length.
+    """
     for plane_dir in sorted(save_folder.glob("plane*")):
         ops_path = plane_dir / "ops.npy"
         if not ops_path.exists():
@@ -153,27 +162,31 @@ def split_suite2p_output(save_folder: Path):
         boundaries = np.cumsum([0] + list(frames_per_file))
 
         F = np.load(plane_dir / "F.npy")
-        Fneu = np.load(plane_dir / "Fneu.npy")
-        spks = np.load(plane_dir / "spks.npy")
-        stat = np.load(plane_dir / "stat.npy", allow_pickle=True)
-        iscell = np.load(plane_dir / "iscell.npy")
-
         if boundaries[-1] != F.shape[1]:
             raise ValueError(
                 f"Sum of frames_per_file ({boundaries[-1]}) does not match "
                 f"F.shape[1] ({F.shape[1]}) in {plane_dir}."
             )
 
+        # sliceable=True arrays are cut to each chunk's frames; the rest
+        # describe ROIs, not frames, so they're saved as-is per chunk.
+        arrays = {
+            "F": (F, True),
+            "Fneu": (np.load(plane_dir / "Fneu.npy"), True),
+            "spks": (np.load(plane_dir / "spks.npy"), True),
+            "stat": (np.load(plane_dir / "stat.npy", allow_pickle=True), False),
+            "iscell": (np.load(plane_dir / "iscell.npy"), False),
+        }
+
         out_dir = plane_dir / "dset_separated"
         out_dir.mkdir(parents=True, exist_ok=True)
 
         for i, (start, end) in enumerate(zip(boundaries[:-1], boundaries[1:])):
-            np.save(out_dir / f"F_dset{i}.npy", F[:, start:end])
-            np.save(out_dir / f"Fneu_dset{i}.npy", Fneu[:, start:end])
-            np.save(out_dir / f"spks_dset{i}.npy", spks[:, start:end])
-            np.save(out_dir / f"stat_dset{i}.npy", stat)
-            np.save(out_dir / f"iscell_dset{i}.npy", iscell)
+            for name, (arr, sliceable) in arrays.items():
+                chunk = arr[:, start:end] if sliceable else arr
+                np.save(out_dir / f"{name}_dset{i}.npy", chunk)
 
-            ops_split = dict(ops)
-            ops_split["nframes"] = int(end - start)
-            np.save(out_dir / f"ops_dset{i}.npy", ops_split)
+            np.save(out_dir / f"ops_dset{i}.npy", dict(ops, nframes=int(end - start)))
+
+
+
