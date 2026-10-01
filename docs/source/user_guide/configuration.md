@@ -68,13 +68,22 @@ suite2p_ops:
   roidetect: true
   anatomical_only: 0
 
-# SLURM settings
+# SLURM settings (one block per rule, named after the rule)
 use_slurm: false
 slurm:
-  slurm_partition: "gpu"
-  mem_mb: 32000
-  tasks: 1
-  nodes: 1
+  _common: &common
+    tasks: 1
+    nodes: 1
+
+  preprocessing:
+    <<: *common
+    slurm_partition: "cpu"
+    mem_mb: 8000
+
+  suite2p:
+    <<: *common
+    slurm_partition: "gpu"
+    mem_mb: 32000
 ```
 
 For the complete configuration file with all available parameters and detailed comments, see [photon_mosaic_pipeline/workflow/config.yaml](https://github.com/photon-mosaic/photon-mosaic-pipeline/blob/main/photon_mosaic_pipeline/workflow/config.yaml) or the YAML file in `~/.photon_mosaic_pipeline/config.yaml` generated on first run.
@@ -117,39 +126,65 @@ Photon-mosaic uses Cellpose 4 by default, with `cpsam` model. If you want to use
 
 ### SLURM
 - `use_slurm`: Enable/disable SLURM job scheduling (default: false)
-- `slurm_partition`: Compute partition to use
-- `mem_mb`: Memory allocation per job
-- `tasks`: Number of parallel tasks
-- `nodes`: Number of compute nodes
+- `slurm`: One sub-block per rule (see below), each holding that rule's resources:
+  - `slurm_partition`: Compute partition to use
+  - `mem_mb`: Memory allocation per job
+  - `tasks`: Number of parallel tasks
+  - `nodes`: Number of compute nodes
 
 In order for SLURM jobs to be executed, you have to launch `photon-mosaic-pipeline` inside an environment in an interactive job in your cluster.
 
+#### Resources are set per rule
+
+Each step of the pipeline — each Snakemake *rule* — is sent to SLURM as its own job, and every job has to say what hardware it needs: which partition, how much memory, and so on. Different steps need different things: `suite2p` needs a GPU, preprocessing does not.
+
+So `slurm:` holds **one block per rule, named after the rule**, and a rule reads only its own block. If both steps shared one set of resources, preprocessing would ask for a GPU as well — and a job that asks for a GPU waits in the queue for one, so a step that never touches the GPU would sit waiting for it anyway.
+
+Repeating the settings that genuinely are the same in every block gets tedious, so write them once and reuse them. YAML does this on its own, with an anchor (`&common`) and a merge (`<<: *common`). Any key starting with `_` is ignored when the resources are read, which makes `_common` a safe place to keep the shared ones:
+
+```yaml
+slurm:
+  _common: &common
+    tasks: 1
+    nodes: 1
+    runtime: 120
+    # slurm_account: "your_account_name"   # replace with YOUR cluster account
+
+  preprocessing:
+    <<: *common
+    slurm_partition: "cpu"
+    mem_mb: 8000
+
+  suite2p:
+    <<: *common
+    slurm_partition: "gpu"
+    mem_mb: 32000
+```
+
+A rule's own keys win over the shared ones: above, `runtime` is the same everywhere while `mem_mb` differs. Apart from the anchor nothing is inherited — a rule gets exactly what its own block lists — so you never have to switch off something another rule asked for. `slurm_account` is specific to your cluster: replace the placeholder with your own account, or delete the line if your cluster does not need one.
+
+**Every rule needs a block.** A rule with no block of its own asks for nothing except its log paths, and is submitted with whatever your cluster gives it by default. If you add a rule, add its block. (A `slurm:` block written the old way, with no per-rule blocks inside it at all, still applies to every rule, so existing configs keep working — except that `null` values and nested blocks are no longer passed on as resources.)
+
 #### GPU resources: `gpu` vs `gres`
 
-The Snakemake SLURM executor plugin offers **two mutually exclusive ways** to request a GPU. You have to pick one! Combining them produces TRES (Trackable RESources) conflicts at the scheduler.
+The Snakemake SLURM executor plugin offers **two mutually exclusive ways** to request a GPU, because `--gpus` and `--gres` describe the same TRES (Trackable RESource) two different ways, and asking for both is ambiguous. You have to pick one! Set both and Snakemake refuses to build the submission at all, with `GRES and GPU are set. Please only set one of them.` Put the key in the block of the rule that needs the GPU — usually `suite2p` — so that no other rule requests one.
 
 - **`gpu`**: request a number of GPUs of any type. The plugin translates this into `--gpus`. Pair with `cpus_per_gpu` if needed.
 
   ```yaml
   slurm:
-    gpu: 1
-    cpus_per_gpu: 4
+    suite2p:
+      gpu: 1
+      cpus_per_gpu: 4
   ```
 
 - **`gres`**: request a specific GPU model via SLURM's Generic Resource string. The plugin translates this into `--gres`. Use this when the cluster has mixed GPU types and you need a specific one (e.g. `"gpu:a100:1"` for one A100). Do **not** also set `gpu`.
 
   ```yaml
   slurm:
-    gres: "gpu:a100:1"
+    suite2p:
+      gres: "gpu:a100:1"
   ```
-
-These keys live under `slurm:` but are forwarded to the rule level, not to Snakemake's `--default-resources`. On startup you will see an `INFO` log line such as:
-
-```
-INFO:photon_mosaic_pipeline.cli:Skipping gres in --default-resources (set at rule level to avoid conflicts): gpu:a100:1
-```
-
-That is expected behaviour, not an error: it confirms the value was picked up and routed to per-rule resources to avoid TRES conflicts. The same applies to `gpu` and `cpus_per_gpu`.
 
 For the upstream mechanics, see the [GRES alternative method](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/slurm.html#alternative-method-using-the-gres-resource) in the Snakemake SLURM plugin docs.
 

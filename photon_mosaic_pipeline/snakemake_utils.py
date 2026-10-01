@@ -45,6 +45,61 @@ def cross_platform_path(path):
         return str(path)
 
 
+def slurm_resources(config, rule_name):
+    """Return the SLURM resources for one rule.
+
+    The ``slurm`` config block holds one sub-block per rule, named after the
+    rule (``slurm.preprocessing``, ``slurm.suite2p``). Each rule reads its own
+    block and nothing else -- there is no inheritance, so a rule never has to
+    remove a resource it did not want. Keys shared between rules are best
+    expressed with a YAML anchor in the config itself::
+
+        slurm:
+          _common: &common
+            runtime: 120
+          preprocessing:
+            <<: *common
+            slurm_partition: "cpu"
+
+    A ``slurm`` block with no per-rule sub-blocks is treated as applying to
+    every rule, which is how it behaved before per-rule blocks existed.
+
+    Parameters
+    ----------
+    config : dict
+        The full workflow config.
+    rule_name : str
+        Name of the rule to resolve resources for.
+
+    Returns
+    -------
+    dict
+        Flat ``{resource: value}`` mapping, empty when SLURM is disabled.
+    """
+    if not config.get("use_slurm"):
+        return {}
+
+    slurm_config = config.get("slurm") or {}
+    block = slurm_config.get(rule_name)
+
+    if block is None:
+        # Backwards compatibility: a flat slurm: block (no per-rule
+        # sub-blocks) applies to every rule, as it did before.
+        block = {
+            key: value
+            for key, value in slurm_config.items()
+            if not isinstance(value, dict)
+        }
+
+    # Drop nulls (not a resource) and the underscore-prefixed keys used to
+    # hold YAML anchors, which are config scaffolding rather than resources.
+    return {
+        key: value
+        for key, value in block.items()
+        if value is not None and not key.startswith("_")
+    }
+
+
 def log_cuda_availability():
     """Log CUDA availability as a sanity check for GPU jobs.
 
