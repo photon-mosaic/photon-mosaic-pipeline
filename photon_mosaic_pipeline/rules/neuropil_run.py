@@ -10,6 +10,38 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
+def _save_split_neuropil_correction(
+    save_folder: Path, dset_dir: Path, neucoeff: float
+) -> None:
+    """Save neuropil-corrected traces for each dataset split.
+
+    Parameters
+    ----------
+    save_folder : Path
+        Folder where the corrected traces will be saved.
+    dset_dir : Path
+        Directory containing the split dataset traces.
+    neucoeff : float
+        Neuropil correction coefficient.
+    """
+
+    out_dset_dir = save_folder / "dset_separated"
+    out_dset_dir.mkdir(parents=True, exist_ok=True)
+
+    for f_file in sorted(dset_dir.glob("F_dset*.npy")):
+        # "F_dset0.npy" -> "0"
+        idx = f_file.stem[len("F_dset") :]
+        fneu_file = dset_dir / f"Fneu_dset{idx}.npy"
+
+        F_i = np.load(f_file)
+        Fneu_i = np.load(fneu_file)
+        Fc_i = _apply_neuropil_correction(F_i, Fneu_i, neucoeff)
+
+        out_file = out_dset_dir / f"Fc_dset{idx}.npy"
+        np.save(out_file, Fc_i)
+        logger.info(f"Saved neuropil-corrected traces to {out_file}")
+
+
 def calculate_neuropil_correction(
     input_path_F: str,
     input_path_Fneu: str,
@@ -50,24 +82,8 @@ def calculate_neuropil_correction(
 
     # Also correct any per-dataset split traces, if present.
     dset_dir = F_path.parent / "dset_separated"
-    if not dset_dir.is_dir():
-        return
-
-    out_dset_dir = out_path.parent / "dset_separated"
-    out_dset_dir.mkdir(parents=True, exist_ok=True)
-
-    for f_file in sorted(dset_dir.glob("F_dset*.npy")):
-        # "F_dset0.npy" -> "0"
-        idx = f_file.stem[len("F_dset") :]
-        fneu_file = dset_dir / f"Fneu_dset{idx}.npy"
-
-        F_i = np.load(f_file)
-        Fneu_i = np.load(fneu_file)
-        Fc_i = _apply_neuropil_correction(F_i, Fneu_i, neucoeff)
-
-        out_file = out_dset_dir / f"Fc_dset{idx}.npy"
-        np.save(out_file, Fc_i)
-        logger.info(f"Saved neuropil-corrected traces to {out_file}")
+    if dset_dir.is_dir():
+        _save_split_neuropil_correction(save_folder, dset_dir, neucoeff)
 
 
 def _apply_neuropil_correction(
