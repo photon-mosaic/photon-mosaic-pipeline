@@ -4,6 +4,7 @@ include requirements-dev.txt
 
 recursive-include photon_mosaic_pipeline *.py
 recursive-include photon_mosaic_pipeline/workflow *
+recursive-include photon_mosaic_pipeline *.yaml
 
 exclude .pre-commit-config.yaml
 
