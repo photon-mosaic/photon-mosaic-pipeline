@@ -15,7 +15,11 @@ dependencies = [
   "datashuttle",
   "derotation",
   "suite2p-NIU",
-  "stiminterp"
+  "stiminterp",
+  "ruamel.yaml>=0.18",
+  "torch",
+  "tifffile",
+  "scipy",
 ]
 
 license = {text = "BSD-3-Clause"}

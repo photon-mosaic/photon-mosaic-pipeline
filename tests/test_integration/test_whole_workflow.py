@@ -87,6 +87,12 @@ def check_output_files(workdir, map_of_tiffs, check_enhanced=False):
                 f"Missing output: data.bin for {subject}/{session}/{tiff}"
             )
 
+            cascade_dir = output_base.parents[1] / "cascade" / "plane0"
+            assert (cascade_dir / "spike_prob.npy").exists(), (
+                f"Missing output: spike_prob.npy for "
+                f"{subject}/{session}/{tiff}"
+            )
+
             if check_enhanced:
                 enhanced_file = (
                     workdir
