@@ -1,48 +1,56 @@
-import os
-import subprocess
+"""End-to-end tests for the pipeline, driven through the CLI.
+
+Everything here goes through the ``photon-mosaic-pipeline`` CLI rather than
+invoking ``snakemake`` directly. The CLI is the only entry point users have,
+and it is a thin wrapper around snakemake, so a second set of tests calling
+snakemake by hand duplicated the same DAG for no extra coverage -- one of the
+CI costs identified in issue #74.
+"""
+
+import shutil
 from pathlib import Path
 
 import yaml
 
-from photon_mosaic_pipeline import get_snakefile_path
+FAILURE_MARKERS = (
+    "Error in rule",
+    "Exiting because a job execution failed",
+    "WorkflowError",
+)
 
 
-def run_snakemake(workdir, configfile, dry_run=False):
-    """Helper function to run snakemake with common parameters."""
+def read_snakemake_log(workdir):
+    """Return the contents of the most recent snakemake log.
 
-    cmd = [
-        "snakemake",
-        "--cores",
-        "1",
-        "--verbose",
-        "--keep-going",
-        "-s",
-        str(get_snakefile_path()),
-        "--configfile",
-        str(configfile),
-        "--debug-dag",
-    ]
-
-    if dry_run:
-        cmd.insert(1, "--dry-run")
-
-    print(" ".join(cmd))
-
-    if os.getenv("CI"):
-        cmd.append("--nolock")
-        cmd.append("--latency-wait")
-        cmd.append("30")
-
-    result = subprocess.run(
-        cmd,
-        cwd=workdir,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
+    The CLI sends snakemake's stdout/stderr to
+    ``derivatives/photon-mosaic-pipeline/logs/snakemake_<timestamp>.log``
+    rather than to the caller's stdout, so this is where the job listing and
+    any workflow error live.
+    """
+    logs_dir = (
+        Path(workdir) / "derivatives" / "photon-mosaic-pipeline" / "logs"
     )
+    logs = sorted(logs_dir.glob("snakemake_*.log"))
+    assert logs, f"No snakemake log written under {logs_dir}"
+    return logs[-1].read_text(encoding="utf-8", errors="replace")
 
-    return result
+
+def assert_no_workflow_error(workdir):
+    """Assert the latest snakemake run reported no failure.
+
+    ``cli.main()`` logs snakemake's exit code but does not propagate it, so
+    the CLI process exits 0 even when the workflow fails -- asserting on
+    ``result.returncode`` would pass unconditionally. Snakemake is not
+    pinned, so this matches on failure markers rather than on a
+    version-specific success message; the positive signal is the output
+    files themselves.
+    """
+    log = read_snakemake_log(workdir)
+    for marker in FAILURE_MARKERS:
+        assert (
+            marker not in log
+        ), f"Snakemake reported a failure ({marker!r}):\n{log}"
+    return log
 
 
 def check_output_files(workdir, map_of_tiffs, check_enhanced=False):
@@ -101,42 +109,74 @@ def check_output_files(workdir, map_of_tiffs, check_enhanced=False):
                 ), f"Missing enhanced output: {enhanced_file}"
 
 
-def test_snakemake_dry_run(snake_test_env):
-    """Test that snakemake can do a dry run."""
-    print("\n=== Starting snakemake dry run test ===")
-    print(f"Working directory: {snake_test_env['workdir']}")
-    print(f"Config file: {snake_test_env['configfile']}")
+def suite2p_outputs(workdir, map_of_tiffs):
+    """Paths suite2p would write, one per subject/session in the fixture."""
+    return [
+        workdir
+        / "derivatives"
+        / subject_session.split("/")[0]
+        / subject_session.split("/")[1]
+        / "funcimg"
+        / "suite2p"
+        / "plane0"
+        / "F.npy"
+        for subject_session in map_of_tiffs
+    ]
 
-    for path in Path(snake_test_env["workdir"]).glob("**/*"):
-        print(f"  {path}")
 
-    result = run_snakemake(
-        snake_test_env["workdir"], snake_test_env["configfile"], dry_run=True
+def test_photon_mosaic_pipeline_cli_dry_run(
+    snake_test_env, run_photon_mosaic_pipeline
+):
+    """A dry run resolves the DAG and executes nothing.
+
+    The CLI still writes its own config snapshot and log; what must not
+    appear is any rule output.
+    """
+    run_photon_mosaic_pipeline(
+        snake_test_env["workdir"],
+        snake_test_env["configfile"],
+        dry_run=True,
     )
 
-    print(f"\n=== Snakemake return code: {result.returncode} ===")
-    print(f"=== STDOUT ===\n{result.stdout}")
-    print(f"=== STDERR ===\n{result.stderr}")
+    log = read_snakemake_log(snake_test_env["workdir"])
+    print(f"\n=== Snakemake dry-run log ===\n{log}")
 
-    assert result.returncode == 0, (
-        f"Snakemake dry-run failed:\nSTDOUT:\n{result.stdout}\n"
-        f"STDERR:\n{result.stderr}"
+    assert (
+        "This was a dry-run" in log
+    ), f"Snakemake did not report a dry run:\n{log}"
+    for marker in FAILURE_MARKERS:
+        assert (
+            marker not in log
+        ), f"Dry run reported a failure ({marker!r}):\n{log}"
+
+    # The DAG should plan work for every session in the fixture.
+    n_sessions = len(snake_test_env["map_of_tiffs"])
+    assert log.count("rule suite2p:") == n_sessions, (
+        f"Expected {n_sessions} planned suite2p jobs, "
+        f"found {log.count('rule suite2p:')}\n{log}"
     )
 
+    # And it should not have executed any of it. This is the assertion the
+    # old test could not make: the helper never passed --dry-run, so the
+    # "dry run" test ran the full pipeline (issue #74).
+    for output in suite2p_outputs(
+        snake_test_env["workdir"], snake_test_env["map_of_tiffs"]
+    ):
+        assert (
+            not output.exists()
+        ), f"Dry run produced an output file: {output}"
 
-def test_snakemake_execution(snake_test_env):
-    """Test that snakemake can execute the workflow."""
-    result = run_snakemake(
-        snake_test_env["workdir"], snake_test_env["configfile"]
+
+def test_photon_mosaic_pipeline_cli(
+    snake_test_env, run_photon_mosaic_pipeline
+):
+    """Test the photon-mosaic-pipeline CLI end-to-end."""
+    run_photon_mosaic_pipeline(
+        snake_test_env["workdir"],
+        snake_test_env["configfile"],
     )
 
-    assert result.returncode == 0, (
-        f"Snakemake execution failed:\nSTDOUT:\n{result.stdout}\n"
-        f"STDERR:\n{result.stderr}"
-    )
-
-    print(f"STDOUT:\n{result.stdout}")
-    print(f"STDERR:\n{result.stderr}")
+    assert_no_workflow_error(snake_test_env["workdir"])
 
     check_output_files(
         snake_test_env["workdir"],
@@ -144,10 +184,11 @@ def test_snakemake_execution(snake_test_env):
     )
 
 
-def test_snakemake_with_contrast(snake_test_env, test_config_with_contrast):
+def test_cli_with_contrast(
+    snake_test_env, test_config_with_contrast, run_photon_mosaic_pipeline
+):
     """
-    Test that snakemake can execute the workflow with contrast enhancement
-    preprocessing.
+    Test that the pipeline runs with contrast enhancement preprocessing.
     """
     config = test_config_with_contrast.copy()
     config["project_path"] = str(snake_test_env["workdir"])
@@ -156,11 +197,9 @@ def test_snakemake_with_contrast(snake_test_env, test_config_with_contrast):
     with open(config_path, "w") as f:
         yaml.safe_dump(config, f, default_style='"', allow_unicode=True)
 
-    result = run_snakemake(snake_test_env["workdir"], config_path)
-    assert result.returncode == 0, (
-        f"Snakemake execution with contrast enhancement failed:\nSTDOUT:\n"
-        f"{result.stdout}\nSTDERR:\n{result.stderr}"
-    )
+    run_photon_mosaic_pipeline(snake_test_env["workdir"], config_path)
+
+    assert_no_workflow_error(snake_test_env["workdir"])
 
     check_output_files(
         snake_test_env["workdir"],
@@ -169,46 +208,14 @@ def test_snakemake_with_contrast(snake_test_env, test_config_with_contrast):
     )
 
 
-def test_photon_mosaic_pipeline_cli_dry_run(
-    snake_test_env, run_photon_mosaic_pipeline
-):
-    """Test that photon-mosaic-pipeline can do a dry run."""
-    result = run_photon_mosaic_pipeline(
-        snake_test_env["workdir"],
-        snake_test_env["configfile"],
-    )
-
-    assert result.returncode == 0, (
-        f"photon-mosaic-pipeline CLI run failed:\nSTDOUT:\n{result.stdout}\n"
-        f"STDERR:\n{result.stderr}"
-    )
-
-
-def test_photon_mosaic_pipeline_cli(
-    snake_test_env, run_photon_mosaic_pipeline
-):
-    """Test the photon-mosaic-pipeline CLI end-to-end."""
-    result = run_photon_mosaic_pipeline(
-        snake_test_env["workdir"],
-        snake_test_env["configfile"],
-    )
-
-    assert result.returncode == 0, (
-        f"photon-mosaic-pipeline CLI run failed:\nSTDOUT:\n{result.stdout}\n"
-        f"STDERR:\n{result.stderr}"
-    )
-
-
-def test_incremental_processing(snake_test_env, data_factory):
+def test_incremental_processing(snake_test_env, run_photon_mosaic_pipeline):
     """Test that adding a new TIFF only triggers processing of the new file."""
     # First run: process initial data
-    result = run_snakemake(
-        snake_test_env["workdir"], snake_test_env["configfile"]
+    run_photon_mosaic_pipeline(
+        snake_test_env["workdir"],
+        snake_test_env["configfile"],
     )
-    assert result.returncode == 0, (
-        f"Initial Snakemake execution failed:\nSTDOUT:\n{result.stdout}\n"
-        f"STDERR:\n{result.stderr}"
-    )
+    assert_no_workflow_error(snake_test_env["workdir"])
 
     print("\n=== Initial run completed successfully ===")
 
@@ -220,38 +227,37 @@ def test_incremental_processing(snake_test_env, data_factory):
 
     new_tiff = funcimg_path / "recording_new.tif"
     master_tiff = Path(__file__).parent.parent / "data" / "master.tif"
-    import shutil
-
     shutil.copy2(master_tiff, new_tiff)
 
     print(f"\n=== Added new TIFF: {new_tiff} ===")
 
-    # Dry-run to see what Snakemake plans to do
-    result_dry = run_snakemake(
-        snake_test_env["workdir"], snake_test_env["configfile"], dry_run=True
+    # Dry-run to see what the pipeline plans to do
+    run_photon_mosaic_pipeline(
+        snake_test_env["workdir"],
+        snake_test_env["configfile"],
+        dry_run=True,
     )
 
-    assert result_dry.returncode == 0, (
-        f"Dry-run after adding TIFF failed:\nSTDOUT:\n{result_dry.stdout}\n"
-        f"STDERR:\n{result_dry.stderr}"
-    )
+    log = read_snakemake_log(snake_test_env["workdir"])
+    for marker in FAILURE_MARKERS:
+        assert (
+            marker not in log
+        ), f"Dry run reported a failure ({marker!r}):\n{log}"
 
-    print(f"\n=== Dry-run output ===\n{result_dry.stdout}")
-    print(f"\n=== Dry-run stderr ===\n{result_dry.stderr}")
+    print(f"\n=== Dry-run log ===\n{log}")
 
-    stdout = result_dry.stdout
-    preprocessing_jobs = stdout.count("rule preprocessing")
+    preprocessing_jobs = log.count("rule preprocessing:")
 
     print(f"\n=== Preprocessing jobs to run: {preprocessing_jobs} ===")
 
     assert preprocessing_jobs == 1, (
         f"Expected only 1 preprocessing job for the new TIFF, "
         f"but found {preprocessing_jobs} jobs.\n"
-        f"Dry-run output:\n{stdout}"
+        f"Dry-run log:\n{log}"
     )
 
     assert (
-        "recording_new.tif" in stdout
-    ), "Expected to find recording_new.tif in the dry-run output"
+        "recording_new.tif" in log
+    ), "Expected to find recording_new.tif in the dry-run log"
 
     print("\n=== Test passed: Only new TIFF will be processed ===")
