@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 _RAWDATA = "rawdata"
 _DERIVATIVES = "derivatives"
 _SUITE2P_FILES = ["F.npy", "Fneu.npy", "data.bin"]
+_SUITE2P_PM_FILE = "binary.json"
 _NEUROPIL_FILES = ["Fc.npy"]
 _DFF_FILES = ["dFF.npy"]
 
@@ -203,3 +204,25 @@ def set_up_dff_targets(preproc_targets: list[str]) -> list[str]:
             dff_targets.append(str(dff_dir / fname))
 
     return dff_targets
+
+def set_up_suite2p_photon_mosaic_targets(preproc_targets: list[str]) -> list[str]:
+    """Generate Suite2p output target paths from preprocessed TIFF paths.
+
+    For each preprocessed TIFF, generates the expected Suite2p output files
+    (F.npy and data.bin) under a suite2p/plane0/ subdirectory.
+
+    Parameters
+    ----------
+    preproc_targets : list[str]
+        Preprocessed TIFF paths (output of adapt_paths_to_output_pattern).
+
+    Returns
+    -------
+    list[str]
+        Suite2p target paths (F.npy and data.bin for each input).
+    """
+    suite2p_targets: list[str] = []
+    for tiff_path in preproc_targets:
+        suite2p_dir = Path(tiff_path).parent  / "suite2p_pm_motion_correction"
+        suite2p_targets.append(str(suite2p_dir / _SUITE2P_PM_FILE))
+    return suite2p_targets
