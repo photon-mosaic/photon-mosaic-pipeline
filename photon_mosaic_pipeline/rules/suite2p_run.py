@@ -190,6 +190,12 @@ def convert_ops_to_db_and_settings(ops: dict) -> tuple[dict, dict]:
         ops, default_db(), default_settings()
     )
 
+    # Old suite2p used [] / "" to mean "unset"; suite2p>=1.0 uses None and
+    # treats e.g. ``subfolders: []`` as "search no folders" (no files found).
+    for key, default in default_db().items():
+        if default is None and db[key] in ([], ""):
+            db[key] = None
+
     if anatomical_only:
         if anatomical_only not in _ANATOMICAL_ONLY_TO_CELLPOSE_IMG:
             raise ValueError(

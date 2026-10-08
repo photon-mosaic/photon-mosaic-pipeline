@@ -185,7 +185,7 @@ dff_ops:
 # SLURM Configuration
 # ============================================================================
 # Settings for SLURM job scheduling system
-use_slurm: false
+use_slurm: true
 slurm:
   slurm_partition: "gpu"  # GPU partition for processing
   mem_mb: 32000          # Memory allocation in MB
