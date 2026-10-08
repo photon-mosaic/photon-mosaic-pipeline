@@ -14,7 +14,7 @@ dependencies = [
   "PyYAML",
   "datashuttle",
   "derotation",
-  "suite2p-NIU",
+  "suite2p>=1.1",
   "stiminterp"
 ]
 

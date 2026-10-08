@@ -122,8 +122,9 @@ suite2p_ops:
   spatial_hp_reg: 42  # Window for spatial high-pass
   pre_smooth: 0  # Gaussian smoothing before high-pass
   spatial_taper: 40  # Edge pixels to ignore
-  refImg_min_percentile: 1  # Min percentile for reference image
-  refImg_max_percentile: 99  # Max percentile for reference image
+  # Not supported by suite2p>=1.0 (were suite2p-NIU only):
+  # refImg_min_percentile: 1  # Min percentile for reference image
+  # refImg_max_percentile: 99  # Max percentile for reference image
 
   # ROI detection settings
   roidetect: true  # Run ROI detection
@@ -142,7 +143,7 @@ suite2p_ops:
   # suite2p's sparsedetect, which currently fails on numpy>=2 inside
   # suite2p-NIU 0.1.1 (sparsedetect.py:337).
   anatomical_only: 4  # Use Cellpose if > 0
-  diameter: 0  # Cellpose diameter (0 for auto)
+  diameter: 0  # Cellpose diameter (0 = Cellpose-SAM native size, 30)
   cellprob_threshold: 0.0  # Cellpose detection threshold
   flow_threshold: 0.4  # Cellpose-SAM flow threshold
   spatial_hp_cp: 0  # Window for Cellpose high-pass
@@ -193,9 +194,9 @@ slurm:
 
   # GPU-specific resources (will be set at rule level, not via --default-resources)
   # Uncomment and configure as needed:
-  # gpu: 1                 # Number of GPUs to request
+  gpu: 1                 # Number of GPUs to request
   # gres: "gpu:a100:1"     # Alternative: Generic Resource (GRES) specification
-  # cpus_per_gpu: 4        # CPUs allocated per GPU
+  cpus_per_gpu: 4        # CPUs allocated per GPU
   # tasks_per_gpu: 0       # Tasks per GPU (set to 0 to disable --ntasks-per-gpu and avoid TRES conflicts)
 
   # Additional SLURM resources that can be specified:
