@@ -2,17 +2,33 @@
 Snakemake rule for running Suite2P.
 """
 
+import logging
 import os
 import traceback
 from pathlib import Path
 from typing import Optional
 
-from suite2p import run_s2p
+from suite2p import default_db, default_settings, run_s2p
 from suite2p.default_ops import default_ops
+from suite2p.parameters import convert_settings_orig
 
 from photon_mosaic_pipeline.rules.split_suite2p_output import (
     split_suite2p_output,
 )
+
+logger = logging.getLogger(__name__)
+
+# Old ``anatomical_only`` values -> suite2p>=1.0 Cellpose input image.
+# Value 3 (enhanced meanImg) has no equivalent in suite2p>=1.0.
+_ANATOMICAL_ONLY_TO_CELLPOSE_IMG = {
+    1: "max_proj / meanImg",
+    2: "meanImg",
+    4: "max_proj",
+}
+
+# Cellpose-SAM's native cell diameter; using it means no image rescaling,
+# which matches the old ``diameter: 0`` (auto) behaviour.
+_CELLPOSE_NATIVE_DIAMETER = 30.0
 
 
 def _force_cellpose_cpu_if_requested():
@@ -83,8 +99,9 @@ def run_suite2p(
         save_folder=save_folder,
         user_ops_dict=user_ops_dict,
     )
+    db, settings = convert_ops_to_db_and_settings(ops)
     try:
-        run_s2p(ops=ops)
+        run_s2p(db=db, settings=settings)
         if split_multitiff:
             split_suite2p_output(save_folder)
     except Exception as e:
@@ -139,3 +156,73 @@ def get_edited_options(
     ops["data_path"] = [str(input_path)]
 
     return ops
+
+
+def convert_ops_to_db_and_settings(ops: dict) -> tuple[dict, dict]:
+    """Convert a flat, old-style Suite2p ``ops`` dict into the ``db`` and
+    nested ``settings`` dicts that ``run_s2p`` takes in suite2p>=1.0.
+
+    Suite2p's own converter handles most keys. ``anatomical_only`` and
+    ``diameter`` need translating here: the converter ignores
+    ``anatomical_only`` (silently falling back to sparsery detection) and
+    suite2p>=1.0 has no auto diameter (``diameter: 0``).
+
+    Parameters
+    ----------
+    ops : dict
+        Flat Suite2p options, as returned by ``get_edited_options``.
+
+    Returns
+    -------
+    tuple[dict, dict]
+        The ``db`` and ``settings`` dicts to pass to ``run_s2p``.
+
+    Raises
+    ------
+    ValueError
+        If ``anatomical_only`` has no suite2p>=1.0 equivalent.
+    """
+    ops = dict(ops)
+    anatomical_only = ops.pop("anatomical_only", 0)
+    diameter = ops.pop("diameter", 0)
+
+    db, settings, unused = convert_settings_orig(
+        ops, default_db(), default_settings()
+    )
+
+    if anatomical_only:
+        if anatomical_only not in _ANATOMICAL_ONLY_TO_CELLPOSE_IMG:
+            raise ValueError(
+                f"anatomical_only={anatomical_only} is not supported by "
+                f"suite2p>=1.0; use one of "
+                f"{sorted(_ANATOMICAL_ONLY_TO_CELLPOSE_IMG)}"
+            )
+        detection = settings["detection"]
+        detection["algorithm"] = "cellpose"
+        detection["cellpose_settings"]["img"] = (
+            _ANATOMICAL_ONLY_TO_CELLPOSE_IMG[anatomical_only]
+        )
+        if "pretrained_model" in unused:
+            detection["cellpose_settings"]["cellpose_model"] = unused.pop(
+                "pretrained_model"
+            )
+        if "spatial_hp_cp" in unused:
+            detection["cellpose_settings"]["highpass_spatial"] = unused.pop(
+                "spatial_hp_cp"
+            )
+
+    if not diameter:
+        diameter = _CELLPOSE_NATIVE_DIAMETER
+    settings["diameter"] = (
+        list(diameter)
+        if isinstance(diameter, (list, tuple))
+        else [diameter] * 2
+    )
+
+    if unused:
+        logger.warning(
+            "Ignoring options with no suite2p>=1.0 equivalent: "
+            f"{sorted(unused)}"
+        )
+
+    return db, settings
