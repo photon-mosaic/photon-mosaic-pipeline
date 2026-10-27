@@ -8,6 +8,8 @@ logger = logging.getLogger(__name__)
 
 _RAWDATA = "rawdata"
 _DERIVATIVES = "derivatives"
+# Folder the pipeline keeps its own logs, configs and staging in
+_PIPELINE_DIR = "photon-mosaic-pipeline"
 _SUITE2P_FILES = ["F.npy", "Fneu.npy", "data.bin"]
 _NEUROPIL_FILES = ["Fc.npy"]
 _DFF_FILES = ["dFF.npy"]
@@ -51,7 +53,7 @@ def find_raw_data_paths(
     raw_data_paths: list[Path] = []
     for pattern in tiff_patterns:
         raw_data_paths.extend(
-            project_path.rglob(f"{_RAWDATA}/sub-*/ses-*/funcimg/{pattern}")
+            project_path.glob(f"{_RAWDATA}/sub-*/ses-*/funcimg/{pattern}")
         )
     raw_data_paths = sorted(set(raw_data_paths))
 
@@ -82,9 +84,30 @@ def find_raw_data_paths(
     return raw_data_paths
 
 
+def get_derivatives_path(config: dict) -> Path:
+    """Folder the pipeline writes its outputs to.
+
+    Parameters
+    ----------
+    config : dict
+        Configuration dictionary. ``derivatives_path`` is used if set,
+        otherwise ``<project_path>/derivatives``.
+
+    Returns
+    -------
+    Path
+        Resolved derivatives folder.
+    """
+    derivatives_path = config.get("derivatives_path") or (
+        Path(config["project_path"]) / _DERIVATIVES
+    )
+    return Path(derivatives_path).resolve()
+
+
 def adapt_paths_to_output_pattern(
     all_selected_tiff_paths: list[Path],
     output_pattern: str,
+    derivatives_path: Path | None = None,
 ) -> list[str]:
     """Convert raw TIFF paths to their expected preprocessed output paths.
 
@@ -97,6 +120,9 @@ def adapt_paths_to_output_pattern(
         Raw TIFF paths, expected to contain a rawdata component.
     output_pattern : str
         String to prepend to the output filename (e.g. ``motion_corrected_``).
+    derivatives_path : Path | None
+        Derivatives folder to write to. Defaults to a ``derivatives``
+        folder next to each path's ``rawdata``.
 
     Returns
     -------
@@ -119,9 +145,11 @@ def adapt_paths_to_output_pattern(
             )
 
         new_filename = f"{output_pattern}{file_path.name}"
+        derivatives = derivatives_path or (
+            Path(*parts[:rawdata_idx]) / _DERIVATIVES
+        )
         output_path = (
-            Path(*parts[:rawdata_idx])
-            / _DERIVATIVES
+            Path(derivatives)
             / Path(*parts[rawdata_idx + 1 : -1])
             / new_filename
         )

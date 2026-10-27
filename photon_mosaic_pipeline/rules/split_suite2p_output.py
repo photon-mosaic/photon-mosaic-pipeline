@@ -41,6 +41,27 @@ def _split_boundaries(ops: dict) -> Optional[np.ndarray]:
     return np.cumsum([0, *frames_per_file])
 
 
+def _split_names(ops: dict, n_chunks: int) -> list[str]:
+    """Name each chunk after the TIFF it came from, falling back to
+    ``dset{i}`` if Suite2p's file list is unavailable.
+    Parameters
+    ----------
+    ops : dict
+        The Suite2p ops dictionary, containing 'file_list' (suite2p>=1.0)
+        or 'filelist' (older versions).
+    n_chunks : int
+        The number of chunks the output is split into.
+    Returns
+    -------
+    list[str]
+        One name per chunk, in Suite2p's concatenation order.
+    """
+    file_list = ops.get("file_list", ops.get("filelist"))
+    if file_list is None or len(file_list) != n_chunks:
+        return [f"dset{i}" for i in range(n_chunks)]
+    return [Path(f).stem for f in file_list]
+
+
 def _check_total_frames(
     boundaries: np.ndarray, F: np.ndarray, plane_dir: Path
 ) -> None:
@@ -85,15 +106,15 @@ def _open_suite2p_outputs(plane_dir: Path) -> dict:
 
 
 def _save_split_chunk(
-    out_dir: Path, i: int, start: int, end: int, arrays: dict, ops: dict
+    out_dir: Path, name: str, start: int, end: int, arrays: dict, ops: dict
 ) -> None:
     """Save split suite2p output for each chunk/tiff.
     Parameters
     ----------
     out_dir : Path
         The output directory where the split files will be saved.
-    i : int
-        The index of the current split chunk.
+    name : str
+        The name of the current split chunk (its TIFF's stem).
     start : int
         The starting frame index for the current chunk.
     end : int
@@ -104,10 +125,10 @@ def _save_split_chunk(
         The Suite2p ops dictionary.
     """
     sliceable_arrays = {"F", "Fneu", "spks"}
-    for name, arr in arrays.items():
-        chunk = arr[:, start:end] if name in sliceable_arrays else arr
-        np.save(out_dir / f"{name}_dset{i}.npy", chunk)
-    np.save(out_dir / f"ops_dset{i}.npy", dict(ops, nframes=int(end - start)))
+    for key, arr in arrays.items():
+        chunk = arr[:, start:end] if key in sliceable_arrays else arr
+        np.save(out_dir / f"{key}_{name}.npy", chunk)
+    np.save(out_dir / f"ops_{name}.npy", dict(ops, nframes=int(end - start)))
 
 
 def split_suite2p_output(save_folder: Path) -> None:
@@ -142,5 +163,6 @@ def split_suite2p_output(save_folder: Path) -> None:
             shutil.rmtree(out_dir)
         out_dir.mkdir(parents=True)
 
-        for i, (start, end) in enumerate(zip(boundaries[:-1], boundaries[1:])):
-            _save_split_chunk(out_dir, i, start, end, outputs, ops)
+        names = _split_names(ops, len(boundaries) - 1)
+        for name, start, end in zip(names, boundaries[:-1], boundaries[1:]):
+            _save_split_chunk(out_dir, name, start, end, outputs, ops)

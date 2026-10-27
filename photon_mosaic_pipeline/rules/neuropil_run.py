@@ -28,16 +28,16 @@ def _save_split_neuropil_correction(
     out_dset_dir = save_folder / "dset_separated"
     out_dset_dir.mkdir(parents=True, exist_ok=True)
 
-    for f_file in sorted(dset_dir.glob("F_dset*.npy")):
-        # "F_dset0.npy" -> "0"
-        idx = f_file.stem[len("F_dset") :]
-        fneu_file = dset_dir / f"Fneu_dset{idx}.npy"
+    for f_file in sorted(dset_dir.glob("F_*.npy")):
+        # "F_recording_00001.npy" -> "recording_00001"
+        name = f_file.stem[len("F_") :]
+        fneu_file = dset_dir / f"Fneu_{name}.npy"
 
         F_i = np.load(f_file)
         Fneu_i = np.load(fneu_file)
         Fc_i = _apply_neuropil_correction(F_i, Fneu_i, neucoeff)
 
-        out_file = out_dset_dir / f"Fc_dset{idx}.npy"
+        out_file = out_dset_dir / f"Fc_{name}.npy"
         np.save(out_file, Fc_i)
         logger.info(f"Saved neuropil-corrected traces to {out_file}")
 

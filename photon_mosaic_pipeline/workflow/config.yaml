@@ -68,14 +68,10 @@ suite2p_ops:
   look_one_level_down: false  # Look in subfolders for tiffs
   fast_disk: []  # Location for temporary binary file
   delete_bin: false  # Delete binary file after registration
-  mesoscan: false  # For scanimage mesoscope recordings
-  bruker: false  # For single page BRUKER tiffs
   bruker_bidirectional: false  # For bidirectional BRUKER recordings
 
   # File handling settings
-  h5py: []  # Path to h5py input file
   h5py_key: 'data'  # Key for h5py data array
-  nwb_file: ''  # Path to NWB input file
   nwb_driver: ''  # Driver for NWB file
   nwb_series: ''  # TwoPhotonSeries name in NWB
   save_path0: ''  # Path for pipeline results
@@ -88,65 +84,58 @@ suite2p_ops:
 
   # Acquisition parameters
   nplanes: 1  # Number of planes per tiff
-  nchannels: 1  # Number of channels per plane
+  nchannels: 2  # Number of channels per plane
   functional_chan: 1  # Channel for functional ROIs (1-based)
   tau: 1.0  # Sensor timescale for deconvolution (1.0 for GCaMP6m)
-  fs: 10.0  # Sampling rate per plane
+  fs: 45.0  # Sampling rate per plane
   force_sktiff: false  # Use scikit-image for tiffs
-  frames_include: -1  # Number of frames to process (-1 for all)
   multiplane_parallel: false  # Run pipeline on server
   ignore_flyback: []  # Planes to ignore as flyback
 
   # Registration settings
-  do_registration: true  # Run registration
+  do_registration: 2  # Run registration (2 = force, even if already registered)
   two_step_registration: false  # Run registration twice (for low SNR)
   keep_movie_raw: false  # Keep non-registered binary
-  nimg_init: 300  # Frames for reference image
+  nimg_init: 1000  # Frames for reference image
   batch_size: 500  # Frames per registration batch
   maxregshift: 0.1  # Max shift as fraction of frame size
-  align_by_chan: 1  # Channel for alignment (1-based)
+  align_by_chan2: true  # Align by the non-functional channel (chan2)
   reg_tif: false  # Write registered binary to tiff
   reg_tif_chan2: false  # Write channel 2 to tiff
   subpixel: 10  # Subpixel registration precision
   smooth_sigma_time: 0  # Temporal smoothing for low SNR
-  smooth_sigma: 1.15  # Spatial smoothing for registration
+  smooth_sigma: 3  # Spatial smoothing for registration
   th_badframes: 1.0  # Threshold for excluding frames
   norm_frames: true  # Normalize frames for shifts
-  force_refImg: false  # Use stored refImg
-  pad_fft: false  # Pad image during FFT
-  nonrigid: true  # Perform non-rigid registration
+  nonrigid: false  # Perform non-rigid registration
   block_size: [128, 128]  # Block size for non-rigid (pixels)
   snr_thresh: 1.2  # Phase correlation threshold
   maxregshiftNR: 5  # Max block shift (pixels)
-  1Preg: false  # High-pass filtering for 1P
-  spatial_hp_reg: 42  # Window for spatial high-pass
-  pre_smooth: 0  # Gaussian smoothing before high-pass
-  spatial_taper: 40  # Edge pixels to ignore
-  refImg_min_percentile: 1  # Min percentile for reference image
-  refImg_max_percentile: 99  # Max percentile for reference image
+  spatial_taper: 3.45  # Edge pixels to ignore
+  # Not supported by suite2p>=1.0 (were suite2p-NIU only):
+  # refImg_min_percentile: 1  # Min percentile for reference image
+  # refImg_max_percentile: 99  # Max percentile for reference image
 
   # ROI detection settings
   roidetect: true  # Run ROI detection
   spikedetect: true  # Run spike detection
-  sparse_mode: true  # Use sparse mode detection
   spatial_scale: 0  # Optimal scale in pixels (0 for auto)
   connected: true  # Require connected ROIs
-  nbinned: 5000  # Max binned frames for detection
+  nbins: 5000  # Max binned frames for detection
   max_iterations: 20  # Max detection iterations
   threshold_scaling: 1.0  # ROI detection threshold
   max_overlap: 0.75  # Max ROI overlap fraction
-  high_pass: 100  # Running mean window
-  spatial_hp_detect: 25  # Window for spatial high-pass
+  highpass_time: 100  # Running mean window for temporal high-pass
+  highpass_neuropil: 25  # Window for spatial high-pass (sparsery)
   denoise: false  # Denoise before detection
-  # Recommended: keep > 0 (Cellpose path). Setting 0 routes through
-  # suite2p's sparsedetect, which currently fails on numpy>=2 inside
-  # suite2p-NIU 0.1.1 (sparsedetect.py:337).
-  anatomical_only: 4  # Use Cellpose if > 0
-  diameter: 0  # Cellpose diameter (0 for auto)
+  anatomical_only: 4  # Use Cellpose if > 0; 0 uses sparsery detection
+  diameter: 0  # Cell diameter in pixels (0 = Cellpose-SAM native size, 30)
   cellprob_threshold: 0.0  # Cellpose detection threshold
   flow_threshold: 0.4  # Cellpose-SAM flow threshold
   spatial_hp_cp: 0  # Window for Cellpose high-pass
-  pretrained_model: 'cpsam'  # Cellpose-SAM model
+  pretrained_model: 'cpsam_v2'  # Cellpose model (functional detection and chan2)
+  detect_on_chan2_mean: false  # Cellpose finds ROIs in the registered chan2 mean image (needs nchannels: 2)
+  chan2_mean_diameter: 0  # Cellpose diameter for that image (0 = Cellpose-SAM native size, 30)
 
   # Neuropil extraction settings
   soma_crop: true  # Crop dendrites for stats
@@ -158,15 +147,16 @@ suite2p_ops:
 
   # Classification settings
   use_builtin_classifier: false  # Use built-in classifier
-  classifier_path: ''  # Path to classifier file
-  chan2_thres: 0.65  # Threshold for channel 2 detection
+  classifier_path: null  # Path to classifier file
+  chan2_threshold: 0.25  # Threshold for channel 2 detection
+  cellpose_chan2: true  # Cellpose on chan2 mean image; overlapping ROIs marked as red cells
 
   # Baseline settings
   baseline: 'maximin'  # Baseline computation method
   win_baseline: 60.0  # Window for maximin filter (s)
   sig_baseline: 10.0  # Gaussian filter width (s)
   prctile_baseline: 8.0  # Percentile for constant baseline
-  neucoeff: 0.7  # Neuropil coefficient
+  neuropil_coefficient: 0.7  # Neuropil coefficient
 
 # ============================================================================
 # Neuropil Correction Configuration
@@ -184,7 +174,7 @@ dff_ops:
 # SLURM Configuration
 # ============================================================================
 # Settings for SLURM job scheduling system
-use_slurm: false
+use_slurm: true
 slurm:
   slurm_partition: "gpu"  # GPU partition for processing
   mem_mb: 32000          # Memory allocation in MB
@@ -193,9 +183,9 @@ slurm:
 
   # GPU-specific resources (will be set at rule level, not via --default-resources)
   # Uncomment and configure as needed:
-  # gpu: 1                 # Number of GPUs to request
+  gpu: 1                 # Number of GPUs to request
   # gres: "gpu:a100:1"     # Alternative: Generic Resource (GRES) specification
-  # cpus_per_gpu: 4        # CPUs allocated per GPU
+  cpus_per_gpu: 4        # CPUs allocated per GPU
   # tasks_per_gpu: 0       # Tasks per GPU (set to 0 to disable --ntasks-per-gpu and avoid TRES conflicts)
 
   # Additional SLURM resources that can be specified:
@@ -203,3 +193,13 @@ slurm:
   # slurm_account: "account_name"  # SLURM account for resource tracking
   # constraint: "feature"  # Node feature requirements
   # mem_mb_per_cpu: 2000   # Memory per CPU (mutually exclusive with mem_mb)
+
+# Per-rule overrides of the slurm block above (rules: preprocessing, suite2p,
+# neuropil, dff). A null value drops that key for the rule, so GPU keys can be
+# removed for rules that only need CPUs (all but suite2p):
+# slurm_rules:
+#   preprocessing:
+#     slurm_partition: "cpu"
+#     gpu: null
+#     cpus_per_gpu: null
+#     runtime: 240

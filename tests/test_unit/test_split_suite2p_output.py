@@ -135,6 +135,46 @@ def test_split_keeps_multiple_planes_independent(tmp_path):
     )
 
 
+def test_split_names_chunks_after_their_tiffs(tmp_path):
+    """When Suite2p records its file_list, each chunk is named after the
+    TIFF it came from, in concatenation order, through neuropil and dFF."""
+    funcimg = tmp_path / "funcimg"
+    plane_dir = funcimg / "suite2p" / "plane0"
+    source = _write_suite2p_plane(plane_dir, frames_per_file=[40, 60])
+    ops = dict(
+        source["ops"],
+        file_list=[
+            str(funcimg / "rec_00001.tif"),
+            str(funcimg / "rec_00002.tif"),
+        ],
+    )
+    np.save(plane_dir / "ops.npy", ops)
+
+    split_suite2p_output(plane_dir.parent)
+
+    out_dir = plane_dir / "dset_separated"
+    assert np.array_equal(
+        np.load(out_dir / "F_rec_00001.npy"), source["F"][:, :40]
+    )
+    assert np.array_equal(
+        np.load(out_dir / "F_rec_00002.npy"), source["F"][:, 40:]
+    )
+    assert not list(out_dir.glob("*_dset*.npy"))
+
+    neuropil_fc = funcimg / "neuropil" / "plane0" / "Fc.npy"
+    calculate_neuropil_correction(
+        str(plane_dir / "F.npy"),
+        str(plane_dir / "Fneu.npy"),
+        str(neuropil_fc),
+        {"neucoeff": 0.7},
+    )
+    dff_path = funcimg / "dff" / "plane0" / "dFF.npy"
+    calculate_dFF(str(neuropil_fc), str(dff_path), {"gmm_ncomponents": 2})
+    dff_dset_dir = dff_path.parent / "dset_separated"
+    assert np.load(dff_dset_dir / "dFF_rec_00001.npy").shape == (2, 40)
+    assert np.load(dff_dset_dir / "dFF_rec_00002.npy").shape == (2, 60)
+
+
 def test_split_single_tiff_is_a_noop(tmp_path):
     plane_dir = tmp_path / "suite2p" / "plane0"
     _write_suite2p_plane(plane_dir, frames_per_file=[50])

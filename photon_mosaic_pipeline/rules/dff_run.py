@@ -28,17 +28,16 @@ def _save_split_dFF(
     out_dset_dir = save_folder / "dset_separated"
     out_dset_dir.mkdir(parents=True, exist_ok=True)
 
-    for fc_file in sorted(dset_dir.glob("Fc_dset*.npy")):
-        # "Fc_dset0.npy" -> "0"
-        idx = fc_file.stem[len("Fc_dset") :]
+    for fc_file in sorted(dset_dir.glob("Fc_*.npy")):
+        # "Fc_recording_00001.npy" -> "recording_00001"
+        name = fc_file.stem[len("Fc_") :]
 
         dff_i, f0_i = dFF(np.load(fc_file), n_components=n_components)
 
-        np.save(out_dset_dir / f"dFF_dset{idx}.npy", dff_i)
-        np.save(out_dset_dir / f"F0_dset{idx}.npy", f0_i)
-        logger.info(
-            f"Saved dF/F traces to {out_dset_dir / f'dFF_dset{idx}.npy'}"
-        )
+        dff_file = out_dset_dir / f"dFF_{name}.npy"
+        np.save(dff_file, dff_i)
+        np.save(out_dset_dir / f"F0_{name}.npy", f0_i)
+        logger.info(f"Saved dF/F traces to {dff_file}")
 
 
 def calculate_dFF(
