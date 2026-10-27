@@ -20,9 +20,6 @@ import re
 import logging
 import os
 
-# Configure SLURM resources if enabled
-slurm_config = config.get("slurm", {}) if config.get("use_slurm") else {}
-
 
 def _get_raw_tiff_for_wildcards(wildcards):
     match = next(
@@ -74,7 +71,7 @@ rule preprocessing:
         subject_name="|".join(_subject_names),
         session_name="|".join(_session_names),
     resources:
-        **(slurm_config if config.get("use_slurm") else {}),
+        **rule_resources("preprocessing"),
     run:
         from photon_mosaic_pipeline.rules.preprocessing import run_preprocessing
 

@@ -43,7 +43,7 @@ rule dff:
         subject_name="|".join(_subject_names),
         session_name="|".join(_session_names),
     resources:
-        **(slurm_config if config.get("use_slurm") else {}),
+        **rule_resources("dff"),
     run:
         from photon_mosaic_pipeline.rules.dff_run import calculate_dFF
         from pathlib import Path

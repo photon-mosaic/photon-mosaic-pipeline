@@ -53,7 +53,7 @@ rule neuropil:
         subject_name="|".join(_subject_names),
         session_name="|".join(_session_names),
     resources:
-        **(slurm_config if config.get("use_slurm") else {}),
+        **rule_resources("neuropil"),
     run:
         from photon_mosaic_pipeline.rules.neuropil_run import (
             calculate_neuropil_correction,

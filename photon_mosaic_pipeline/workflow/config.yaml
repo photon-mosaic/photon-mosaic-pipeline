@@ -134,6 +134,8 @@ suite2p_ops:
   flow_threshold: 0.4  # Cellpose-SAM flow threshold
   spatial_hp_cp: 0  # Window for Cellpose high-pass
   pretrained_model: 'cpsam_v2'  # Cellpose model (functional detection and chan2)
+  detect_on_chan2_mean: false  # Cellpose finds ROIs in the registered chan2 mean image (needs nchannels: 2)
+  chan2_mean_diameter: 0  # Cellpose diameter for that image (0 = Cellpose-SAM native size, 30)
 
   # Neuropil extraction settings
   soma_crop: true  # Crop dendrites for stats
@@ -191,3 +193,13 @@ slurm:
   # slurm_account: "account_name"  # SLURM account for resource tracking
   # constraint: "feature"  # Node feature requirements
   # mem_mb_per_cpu: 2000   # Memory per CPU (mutually exclusive with mem_mb)
+
+# Per-rule overrides of the slurm block above (rules: preprocessing, suite2p,
+# neuropil, dff). A null value drops that key for the rule, so GPU keys can be
+# removed for rules that only need CPUs (all but suite2p):
+# slurm_rules:
+#   preprocessing:
+#     slurm_partition: "cpu"
+#     gpu: null
+#     cpus_per_gpu: null
+#     runtime: 240

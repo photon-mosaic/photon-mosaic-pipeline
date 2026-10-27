@@ -58,6 +58,17 @@ if use_slurm:
 else:
     logger.info("SLURM execution disabled - running locally")
 
+
+def rule_resources(rule_name):
+    """SLURM resources for a rule: ``slurm`` updated with
+    ``slurm_rules[rule_name]``, where a null value drops that key (e.g.
+    ``gres: null`` for a CPU-only rule)."""
+    if not use_slurm:
+        return {}
+    overrides = (config.get("slurm_rules") or {}).get(rule_name) or {}
+    merged = {**slurm_config, **overrides}
+    return {key: value for key, value in merged.items() if value is not None}
+
 # Discover datasets and their TIFF files
 all_selected_tiff_paths = find_raw_data_paths(
     project_path,

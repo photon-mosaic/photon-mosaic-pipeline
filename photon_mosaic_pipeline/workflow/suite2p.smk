@@ -68,7 +68,7 @@ rule suite2p:
         subject_name="|".join(_subject_names),
         session_name="|".join(_session_names),
     resources:
-        **(slurm_config if config.get("use_slurm") else {}),
+        **rule_resources("suite2p"),
     run:
         from photon_mosaic_pipeline.rules.suite2p_run import run_suite2p
         from pathlib import Path
