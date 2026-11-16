@@ -41,7 +41,7 @@ jobs:
       - uses: neuroinformatics-unit/actions/test@v2
         env:
           # numcodecs 0.15.1's bundled Blosc does not compile as C23.
-          CFLAGS: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14' && '-std=c17' || '' }}
+          CFLAGS: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14' && '-std=gnu17' || '' }}
         with:
           python-version: ${{ matrix.python-version }}
 
