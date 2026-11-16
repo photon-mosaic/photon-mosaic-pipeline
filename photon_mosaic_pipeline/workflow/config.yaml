@@ -216,3 +216,13 @@ slurm:
     # gres: "gpu:a100:1"     # Alternative: Generic Resource (GRES) specification
     # cpus_per_gpu: 4        # CPUs allocated per GPU
     # mem_mb_per_cpu: 2000   # Memory per CPU (mutually exclusive with mem_mb)
+
+  neuropil:
+    <<: *common
+    slurm_partition: "cpu"  # Neuropil correction is CPU-only
+    mem_mb: 8000            # Memory allocation in MB
+
+  dff:
+    <<: *common
+    slurm_partition: "cpu"  # dF/F calculation is CPU-only
+    mem_mb: 8000            # Memory allocation in MB
