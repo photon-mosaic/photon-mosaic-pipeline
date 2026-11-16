@@ -1,4 +1,10 @@
-from photon_mosaic_pipeline.paths_selection import find_raw_data_paths
+from pathlib import Path
+
+from photon_mosaic_pipeline.paths_selection import (
+    _RULE_OUTPUTS,
+    find_raw_data_paths,
+    set_up_session_targets,
+)
 
 
 def test_find_raw_data_paths(tmp_path, data_factory):
@@ -68,3 +74,24 @@ def test_find_raw_data_paths(tmp_path, data_factory):
     ]
 
     assert set(paths) == set(expected_paths)
+
+
+def test_set_up_session_targets_once_per_session():
+    """A session with several TIFFs gets each rule output once, and every
+    session gets all of them.
+    """
+    one = Path("derivatives/sub-001/ses-001/funcimg")
+    two = Path("derivatives/sub-001/ses-002/funcimg")
+    preproc_targets = [
+        str(one / "a.tif"),
+        str(one / "b.tif"),
+        str(two / "a.tif"),
+    ]
+
+    targets = set_up_session_targets(preproc_targets)
+
+    assert sorted(targets) == sorted(
+        str(folder / output)
+        for folder in (one, two)
+        for output in _RULE_OUTPUTS.values()
+    )

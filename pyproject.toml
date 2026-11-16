@@ -9,12 +9,11 @@ dynamic = ["version"]
 dependencies = [
   "snakemake",
   "numpy",
-  "scikit-learn",
   "snakemake-executor-plugin-slurm",
   "PyYAML",
   "datashuttle",
   "derotation",
-  "suite2p-NIU",
+  "photon-mosaic[suite2p]",
   "stiminterp"
 ]
 

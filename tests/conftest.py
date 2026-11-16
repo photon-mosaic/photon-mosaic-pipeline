@@ -6,7 +6,6 @@ tests, following the DRY principle to avoid duplication.
 """
 
 import argparse
-import os
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -16,16 +15,6 @@ import yaml
 
 from tests.test_data_factory import DataFactory
 from tests.tree_helpers import tree as tree_lines
-
-# On CI, pin Cellpose to the CPU. The integration tests run the pipeline by
-# spawning snakemake as a subprocess (which inherits os.environ), and
-# GitHub-hosted macOS runners expose a non-functional MPS device that makes
-# Cellpose-SAM return 0 masks -> Suite2p writes no F.npy -> the workflow
-# fails. We gate on CI so local test runs keep using a working GPU/MPS (much
-# faster); the env var is also a manual override anywhere. See
-# photon_mosaic_pipeline.rules.suite2p_run._force_cellpose_cpu_if_requested.
-if os.environ.get("CI"):
-    os.environ.setdefault("PHOTON_MOSAIC_FORCE_CPU", "1")
 
 
 @pytest.fixture
@@ -86,6 +75,10 @@ def base_config():
 
     config["project_path"] = "."
     config["dataset_discovery"]["tiff_patterns"] = ["*.tif"]
+    # The test movie is 128 x 128 pixels: non-rigid registration needs more
+    # than one block, and sparsery finds ROIs on it where Cellpose does not.
+    config["motion_correction"]["settings"]["block_size"] = [64, 64]
+    config["segmentation"]["settings"]["algorithm"] = "sparsery"
 
     return config
 

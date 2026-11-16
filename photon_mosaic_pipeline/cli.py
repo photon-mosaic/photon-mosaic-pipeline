@@ -488,8 +488,8 @@ def main():
     """Run the photon-mosaic-pipeline Snakemake pipeline for automated
     and reproducible analysis of multiphoton calcium imaging datasets.
 
-    This pipeline integrates Suite2p for image registration and signal
-    extraction, with a standardized output folder structure following
+    This pipeline uses photon-mosaic for motion correction, ROI detection
+    and trace extraction, with a standardized output folder structure following
     the NeuroBlueprint specification. It is designed for labs that
     store their data on servers connected to HPC clusters and want to
     batch-process multiple imaging sessions in parallel.
@@ -509,7 +509,7 @@ def main():
     --dry-run : bool, optional
         Perform a dry run to preview the workflow without executing.
     --forcerun : str, optional
-        Force re-run of a specific rule (e.g., 'suite2p').
+        Force re-run of a specific rule (e.g., 'segmentation').
     --rerun-incomplete : bool, optional
         Rerun any incomplete jobs.
     --latency-wait : int, default=30

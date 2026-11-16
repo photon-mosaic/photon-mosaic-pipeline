@@ -59,13 +59,7 @@ def check_output_files(workdir, map_of_tiffs, check_enhanced=False):
 
         for tiff in tiff_files:
             output_base = (
-                workdir
-                / "derivatives"
-                / subject
-                / session
-                / "funcimg"
-                / "suite2p"
-                / "plane0"
+                workdir / "derivatives" / subject / session / "funcimg"
             )
 
             print(f"\n=== Checking files for {subject}/{session}/{tiff} ===")
@@ -78,14 +72,17 @@ def check_output_files(workdir, map_of_tiffs, check_enhanced=False):
             )
             print("=== End of Expected Output Files ===\n")
 
-            assert (
-                output_base / "F.npy"
-            ).exists(), f"Missing output: F.npy for {subject}/{session}/{tiff}"
-            assert (
-                output_base / "data.bin"
-            ).exists(), (
-                f"Missing output: data.bin for {subject}/{session}/{tiff}"
-            )
+            extensions = output_base / "roi_analyzer" / "extensions"
+            for output in (
+                output_base / "motion_correction" / "traces_cached_seg0.raw",
+                output_base / "segmentation" / "rois" / "roi_ids.npy",
+                extensions / "neuropil" / "neuropil_masks.pkl",
+                extensions / "fluorescence" / "fluorescence.npy",
+                extensions / "df_over_f" / "df_over_f.npy",
+            ):
+                assert (
+                    output.exists()
+                ), f"Missing output: {output} for {subject}/{session}/{tiff}"
 
             if check_enhanced:
                 enhanced_file = (
