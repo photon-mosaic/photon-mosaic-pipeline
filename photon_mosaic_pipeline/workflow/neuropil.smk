@@ -16,7 +16,10 @@ Output: Neuropil-corrected traces (Fc.npy) in neuropil/plane0/ directory
 
 from pathlib import Path
 
-from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
+from photon_mosaic_pipeline.snakemake_utils import (
+    cross_platform_path,
+    slurm_resources,
+)
 from photon_mosaic_pipeline.paths_selection import _DERIVATIVES
 
 
@@ -57,7 +60,7 @@ rule neuropil:
         subject_name="|".join(_subject_names),
         session_name="|".join(_session_names),
     resources:
-        **(slurm_config if config.get("use_slurm") else {}),
+        **slurm_resources(config, "neuropil"),
     run:
         from photon_mosaic_pipeline.rules.neuropil_run import (
             calculate_neuropil_correction,
