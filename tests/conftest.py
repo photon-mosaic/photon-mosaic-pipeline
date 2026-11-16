@@ -44,11 +44,12 @@ def run_photon_mosaic_pipeline():
         timeout: seconds to wait for the subprocess to complete. If None,
         wait indefinitely (no timeout).
 
-        Assert on read_snakemake_log() and on the output files, not on
-        ``result.returncode``: the CLI redirects snakemake's own output to
-        a log file under derivatives/photon-mosaic-pipeline/logs/, and
-        cli.main() logs snakemake's exit code without propagating it, so
-        the CLI exits 0 even when the workflow fails.
+        Assert on the CLI success message, read_snakemake_log(), and the
+        output files, not on ``result.returncode``: the CLI redirects
+        snakemake's own output to a log file under
+        derivatives/photon-mosaic-pipeline/logs/, and cli.main() logs
+        snakemake's exit code without propagating it, so the CLI exits 0
+        even when the workflow fails.
         """
         cmd = [
             "photon-mosaic-pipeline",
@@ -74,6 +75,10 @@ def run_photon_mosaic_pipeline():
             encoding="utf-8",
             errors="replace",
         )
+
+        assert (
+            "Snakemake pipeline completed successfully." in result.stderr
+        ), f"CLI did not report successful completion:\n{result.stderr}"
 
         return result
 
