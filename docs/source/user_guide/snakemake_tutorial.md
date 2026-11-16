@@ -7,7 +7,7 @@ The pipeline expects a [NeuroBlueprint](https://neuroblueprint.neuroinformatics.
 
 ## Why use Snakemake?
 
-Snakemake is a powerful workflow management system that allows you to run complex data analysis pipelines in a reproducible and efficient manner. For each defined rule (a rule is a step in the workflow, for instance running Suite2p), Snakemake checks if the output files already exist and whether they are up to date. If not, it runs the rule and generates the outputs.
+Snakemake is a powerful workflow management system that allows you to run complex data analysis pipelines in a reproducible and efficient manner. For each defined rule (a rule is a step in the workflow, for instance motion correction), Snakemake checks if the output files already exist and whether they are up to date. If not, it runs the rule and generates the outputs.
 
 This approach lets you rerun only the parts of the workflow that need to be updated, avoiding the need to repeat the entire analysis each time.
 
@@ -46,13 +46,13 @@ photon-mosaic-pipeline --jobs 5
 To force the re-execution of a specific rule:
 
 ```bash
-photon-mosaic-pipeline --forcerun suite2p
+photon-mosaic-pipeline --forcerun segmentation
 ```
 
-To reprocess a specific session, you can specify a target output file (e.g., `F.npy`) from the derivatives tree:
+To reprocess a specific session, you can specify a target output file (e.g., the log of the segmentation) from the derivatives tree:
 
 ```bash
-photon-mosaic-pipeline /path/to/derivatives/sub-001/ses-001/funcimg/suite2p/plane0/F.npy
+photon-mosaic-pipeline /path/to/derivatives/sub-001/ses-001/funcimg/segmentation/segmentation_log.json
 ```
 
 To run the workflow on a cluster, check instructions in the [configuration documentation](configuration.md).

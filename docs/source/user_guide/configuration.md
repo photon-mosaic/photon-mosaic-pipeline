@@ -48,25 +48,33 @@ preprocessing:
   steps:
     - name: noop  # Only one step should be active at a time
 
-# Suite2p settings
-suite2p_ops:
-  # Acquisition parameters
-  nplanes: 1
-  nchannels: 1
-  fs: 10.0
-  tau: 1.0
+# Motion correction (photon-mosaic)
+motion_correction:
+  reader: read_tiff_imaging  # function of photon_mosaic.extractors
+  reader_kwargs:
+    sampling_frequency: 10.0
+  method: suite2p
+  settings:
+    nonrigid: true
 
-  # Registration settings
-  do_registration: true
-  nonrigid: true
+# ROI detection (photon-mosaic)
+segmentation:
+  method: suite2p
+  settings:
+    algorithm: cellpose
+    fs: 10.0
+    tau: 1.0
 
-  # Custom registration parameters (our fork)
-  refImg_min_percentile: 1
-  refImg_max_percentile: 99
+# Traces (photon-mosaic RoiAnalyzer extensions)
+neuropil:
+  inner_neuropil_radius: 2
+fluorescence:
+  neuropil_weight: 0.7
+dff:
+  win_baseline: 60.0
 
-  # ROI detection
-  roidetect: true
-  anatomical_only: 0
+# Also save the traces of each TIFF on their own
+split_multitiff: false
 
 # SLURM settings
 use_slurm: false
@@ -84,36 +92,34 @@ For the complete configuration file with all available parameters and detailed c
 ### Preprocessing
 See the [preprocessing documentation](preprocessing.md) for step-specific configuration
 
-### Suite2p Parameters
-The configuration includes all standard Suite2p parameters plus custom additions:
+### Motion correction, segmentation and traces
+After preprocessing, every step is run with the [photon-mosaic](https://api.photon-mosaic.org) package, one Snakemake rule per step. All the TIFFs of a session are processed together, one epoch per TIFF.
 
-#### Custom Registration Parameters
-Our fork includes additional parameters for improved registration:
-- `refImg_min_percentile`: Minimum percentile for reference image selection (default: 1)
-- `refImg_max_percentile`: Maximum percentile for reference image selection (default: 99)
+| Rule | Config section | What it does | Output folder in `funcimg/` |
+|------|----------------|--------------|-----------------------------|
+| `motion_correction` | `motion_correction` | Estimates the motion and saves the registered movie | `motion_correction/` |
+| `segmentation` | `segmentation` | Detects ROIs on the registered movie | `segmentation/` |
+| `neuropil` | `neuropil` | Builds the neuropil mask of each ROI | `roi_analyzer/extensions/neuropil/` |
+| `fluorescence` | `fluorescence` | Extracts the neuropil-corrected trace of each ROI | `roi_analyzer/extensions/fluorescence/` |
+| `dff` | `dff` | Computes dF/F | `roi_analyzer/extensions/df_over_f/` |
 
-These parameters control contrast normalization during registration and are especially useful for low SNR datasets like three-photon imaging.
+Every output folder can be opened in Python with `photon_mosaic.load(folder)`: `motion_correction/` as an imaging object, `segmentation/rois/` as ROIs and `roi_analyzer/` as a `RoiAnalyzer` holding the three trace extensions.
+
+#### Reading the TIFFs
+`motion_correction.reader` is the name of the function of `photon_mosaic.extractors` that opens one TIFF, and `reader_kwargs` its extra arguments. A plain TIFF does not store its sampling rate, so `read_tiff_imaging` needs `sampling_frequency`. `read_scan_image_imaging` reads it from the ScanImage metadata, which only the `noop` preprocessing step keeps: the other steps write plain TIFFs.
+
+#### Settings
+`method` selects the backend of a step (`suite2p` for now) and `settings` holds the backend's settings. The ones you leave out keep their default. The keys under `neuropil`, `fluorescence` and `dff` are the parameters of the matching `RoiAnalyzer` extension. Refer to the [photon-mosaic documentation](https://api.photon-mosaic.org) for the complete lists.
+
+Two settings to check for your data:
+- `segmentation.settings.fs` is the sampling rate used to bin the movie for detection. Set it to the sampling rate of your data.
+- `device` is `cpu` by default for both motion correction and segmentation. Set it to `cuda` (or `mps`) to use a GPU.
 
 #### Cell Detection
-To use Cellpose for cell detection, set `anatomical_only` to a value greater than 0:
+`segmentation.settings.algorithm` selects how ROIs are found: `sparsery` and `sourcery` are Suite2p's functional detection, `cellpose` runs Cellpose-SAM on the registered movie.
 
-```yaml
-suite2p_ops:
-  anatomical_only: 4  # Use maximum projection image for cell detection
-```
-Choose the value of `anatomical_only` based on the following table:
-
-| Value | Description |
-|-------|-------------|
-| 1     | Use max projection image divided by mean image |
-| 2     | Use mean image |
-| 3     | Use enhanced mean image |
-| 4     | Use maximum projection image |
-
-For a complete list of all available Suite2p parameters, refer to the [official Suite2p documentation](https://suite2p.readthedocs.io/en/latest/parameters).
-
-#### Cellpose 3 vs Cellpose 4
-Photon-mosaic uses Cellpose 4 by default, with `cpsam` model. If you want to use Cellpose 3, you can uninstall the Cellpose 4 from your conda environment and install Cellpose 3: `pip uninstall cellpose` and `pip install cellpose==3.0.0`. In such a case remember to change the `flow_threshold` to 1.5.
+#### One output per TIFF
+With `split_multitiff: true`, the `fluorescence` and `dff` rules also save the traces of each TIFF on their own, as `fluorescence_tiff<i>.npy` and `df_over_f_tiff<i>.npy` in `funcimg/split_multitiff/`. The TIFFs are numbered in the order they were read, sorted by path.
 
 ### SLURM
 - `use_slurm`: Enable/disable SLURM job scheduling (default: false)
