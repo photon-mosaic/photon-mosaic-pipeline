@@ -186,7 +186,7 @@ def log_list_summary(logger, items, item_type, preview_count=5):
         List of items to summarize
     item_type : str
         Description of the items (e.g., "Preprocessing targets",
-        "Suite2p targets")
+        "Session targets")
     preview_count : int
         Number of items to show in debug mode (default: 5)
     """
