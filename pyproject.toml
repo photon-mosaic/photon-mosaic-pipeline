@@ -126,6 +126,7 @@ deps =
 passenv =
     USERNAME
     CI
+    CFLAGS
 commands =
     pytest -v --color=yes --cov=photon_mosaic_pipeline --cov-report=xml
 """
