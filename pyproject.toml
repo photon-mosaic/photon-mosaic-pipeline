@@ -15,7 +15,7 @@ dependencies = [
   "datashuttle",
   "derotation",
   "stiminterp",
-  "photon-mosaic[suite2p-registration] @ git+https://github.com/photon-mosaic/photon-mosaic.git@stable-spikeinterf-dep"
+  "photon-mosaic[suite2p] @ git+https://github.com/photon-mosaic/photon-mosaic.git@main"
 ]
 
 license = {text = "BSD-3-Clause"}
