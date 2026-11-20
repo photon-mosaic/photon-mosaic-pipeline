@@ -60,6 +60,36 @@ preprocessing:
 
 
 # ============================================================================
+# Motion Correction (photon-mosaic)
+# ============================================================================
+# Registration with photon-mosaic's suite2p backend. Reads the ScanImage
+# TIFFs directly (use the noop preprocessing step), so frame rate and
+# channel layout come from the ScanImage metadata.
+registration:
+  functional_channel: 1  # Channel to register and save (1-based, among saved channels)
+  align_channel: 1  # Channel to estimate motion on (2 = align by a structural channel)
+  two_step: false  # Register twice, 2nd time against the registered mean (low SNR)
+  reg_tif: false  # Also write the registered functional channel as TIFF (reg_tif/)
+  reg_tif_chan2: false  # Also write the other channel, registered, as TIFF (reg_tif_chan2/)
+
+  # Passed straight to photon-mosaic's compute_motion(method="suite2p"): any
+  # photon-mosaic Suite2pRegistrationSettings field or suite2p 1.x
+  # registration setting. Anything not listed uses their defaults.
+  suite2p:
+    nonrigid: true  # Non-rigid (block-wise) registration
+    block_size: [128, 128]  # Block size for non-rigid (pixels)
+    max_nonrigid_shift: 5  # Max block shift (pixels); suite2p: maxregshiftNR
+    maxregshift: 0.1  # Max rigid shift, as fraction of frame size
+    batch_size: 500  # Frames per registration batch
+    nimg_init: 300  # Frames for the reference image
+    smooth_sigma: 1.15  # Spatial smoothing for registration
+    smooth_sigma_time: 0  # Temporal smoothing; must be 0 with suite2p 1.x
+    snr_thresh: 1.2  # Phase correlation threshold
+    norm_frames: true  # Normalize frames when computing shifts
+    th_badframes: 1.0  # Threshold for excluding frames
+    spatial_taper: 40  # Edge pixels to ignore
+
+# ============================================================================
 # Suite2p Configuration
 # ============================================================================
 # Parameters for Suite2p processing pipeline
@@ -96,34 +126,6 @@ suite2p_ops:
   frames_include: -1  # Number of frames to process (-1 for all)
   multiplane_parallel: false  # Run pipeline on server
   ignore_flyback: []  # Planes to ignore as flyback
-
-  # Registration settings
-  do_registration: true  # Run registration
-  two_step_registration: false  # Run registration twice (for low SNR)
-  keep_movie_raw: false  # Keep non-registered binary
-  nimg_init: 300  # Frames for reference image
-  batch_size: 500  # Frames per registration batch
-  maxregshift: 0.1  # Max shift as fraction of frame size
-  align_by_chan: 1  # Channel for alignment (1-based)
-  reg_tif: false  # Write registered binary to tiff
-  reg_tif_chan2: false  # Write channel 2 to tiff
-  subpixel: 10  # Subpixel registration precision
-  smooth_sigma_time: 0  # Temporal smoothing for low SNR
-  smooth_sigma: 1.15  # Spatial smoothing for registration
-  th_badframes: 1.0  # Threshold for excluding frames
-  norm_frames: true  # Normalize frames for shifts
-  force_refImg: false  # Use stored refImg
-  pad_fft: false  # Pad image during FFT
-  nonrigid: true  # Perform non-rigid registration
-  block_size: [128, 128]  # Block size for non-rigid (pixels)
-  snr_thresh: 1.2  # Phase correlation threshold
-  maxregshiftNR: 5  # Max block shift (pixels)
-  1Preg: false  # High-pass filtering for 1P
-  spatial_hp_reg: 42  # Window for spatial high-pass
-  pre_smooth: 0  # Gaussian smoothing before high-pass
-  spatial_taper: 40  # Edge pixels to ignore
-  refImg_min_percentile: 1  # Min percentile for reference image
-  refImg_max_percentile: 99  # Max percentile for reference image
 
   # ROI detection settings
   roidetect: true  # Run ROI detection

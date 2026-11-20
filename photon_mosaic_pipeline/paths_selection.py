@@ -205,11 +205,15 @@ def set_up_dff_targets(preproc_targets: list[str]) -> list[str]:
 
     return dff_targets
 
-def set_up_suite2p_photon_mosaic_targets(preproc_targets: list[str]) -> list[str]:
-    """Generate Suite2p output target paths from preprocessed TIFF paths.
 
-    For each preprocessed TIFF, generates the expected Suite2p output files
-    (F.npy and data.bin) under a suite2p/plane0/ subdirectory.
+def set_up_suite2p_photon_mosaic_targets(
+    preproc_targets: list[str],
+) -> list[str]:
+    """Generate photon-mosaic registration targets from preprocessed TIFFs.
+
+    Registration runs once per session, on all its TIFFs together, so there
+    is one target per ``funcimg`` folder:
+    ``suite2p_pm_motion_correction/binary.json``.
 
     Parameters
     ----------
@@ -219,10 +223,15 @@ def set_up_suite2p_photon_mosaic_targets(preproc_targets: list[str]) -> list[str
     Returns
     -------
     list[str]
-        Suite2p target paths (F.npy and data.bin for each input).
+        One binary.json path per session, in sorted order.
     """
-    suite2p_targets: list[str] = []
-    for tiff_path in preproc_targets:
-        suite2p_dir = Path(tiff_path).parent  / "suite2p_pm_motion_correction"
-        suite2p_targets.append(str(suite2p_dir / _SUITE2P_PM_FILE))
-    return suite2p_targets
+    return sorted(
+        {
+            str(
+                Path(tiff_path).parent
+                / "suite2p_pm_motion_correction"
+                / _SUITE2P_PM_FILE
+            )
+            for tiff_path in preproc_targets
+        }
+    )
