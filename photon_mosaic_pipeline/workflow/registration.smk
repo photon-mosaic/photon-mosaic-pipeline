@@ -2,7 +2,7 @@ from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
 from photon_mosaic_pipeline.paths_selection import _DERIVATIVES
 
 
-rule suite2p_pm_motion_correction:
+rule motion_correction:
     input:
         tiffs=lambda wildcards: [
             cross_platform_path(
@@ -24,7 +24,7 @@ rule suite2p_pm_motion_correction:
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
-            / "suite2p_pm_motion_correction"
+            / "motion_correction"
             / "traces_cached_seg0.raw"
         ),
     wildcard_constraints:
@@ -33,7 +33,7 @@ rule suite2p_pm_motion_correction:
     resources:
         **(slurm_config if config.get("use_slurm") else {}),
     run:
-        from photon_mosaic_pipeline.rules.photon_mosaic_suite2p_registration import run_suite2p_registration
+        from photon_mosaic_pipeline.rules.registration import run_suite2p_registration
         from pathlib import Path
 
         run_suite2p_registration(

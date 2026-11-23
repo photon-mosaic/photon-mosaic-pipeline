@@ -9,13 +9,11 @@ logger = logging.getLogger(__name__)
 _RAWDATA = "rawdata"
 _DERIVATIVES = "derivatives"
 _SUITE2P_FILES = ["F.npy", "Fneu.npy", "data.bin"]
-_SUITE2P_PM_FILE = "traces_cached_seg0.raw"
-_SUITE2P_PM_ROI_FILE = "segmentation_log.json"
-_PM_ROI_ANALYZER = Path(
-    "suite2p_pm_roi_extraction", "roi_analyzer", "extensions"
-)
-_NEUROPIL_FILE = _PM_ROI_ANALYZER / "fluorescence" / "fluorescence.npy"
-_DFF_FILE = _PM_ROI_ANALYZER / "df_over_f" / "df_over_f.npy"
+_MOTION_FILE = "traces_cached_seg0.raw"
+_ROI_FILE = "segmentation_log.json"
+_ROI_ANALYZER = Path("roi_extraction", "roi_analyzer", "extensions")
+_NEUROPIL_FILE = _ROI_ANALYZER / "fluorescence" / "fluorescence.npy"
+_DFF_FILE = _ROI_ANALYZER / "df_over_f" / "df_over_f.npy"
 
 
 def find_raw_data_paths(
@@ -165,7 +163,7 @@ def set_up_neuropil_targets(preproc_targets: list[str]) -> list[str]:
 
     Neuropil correction runs once per session on its ROI analyzer, so there
     is one target per ``funcimg`` folder: the neuropil-corrected
-    fluorescence, ``suite2p_pm_roi_extraction/roi_analyzer/extensions/
+    fluorescence, ``roi_extraction/roi_analyzer/extensions/
     fluorescence/fluorescence.npy``.
 
     Parameters
@@ -190,7 +188,7 @@ def set_up_dff_targets(preproc_targets: list[str]) -> list[str]:
     """Generate dF/F targets from preprocessed TIFF paths.
 
     dF/F runs once per session on its ROI analyzer, so there is one target
-    per ``funcimg`` folder: ``suite2p_pm_roi_extraction/roi_analyzer/
+    per ``funcimg`` folder: ``roi_extraction/roi_analyzer/
     extensions/df_over_f/df_over_f.npy``.
 
     Parameters
@@ -211,14 +209,14 @@ def set_up_dff_targets(preproc_targets: list[str]) -> list[str]:
     )
 
 
-def set_up_suite2p_photon_mosaic_targets(
+def set_up_motion_targets(
     preproc_targets: list[str],
 ) -> list[str]:
     """Generate photon-mosaic registration targets from preprocessed TIFFs.
 
     Registration runs once per session, on all its TIFFs together, so there
     is one target per ``funcimg`` folder:
-    ``suite2p_pm_motion_correction/traces_cached_seg0.raw``.
+    ``motion_correction/traces_cached_seg0.raw``.
 
     Parameters
     ----------
@@ -234,22 +232,22 @@ def set_up_suite2p_photon_mosaic_targets(
         {
             str(
                 Path(tiff_path).parent
-                / "suite2p_pm_motion_correction"
-                / _SUITE2P_PM_FILE
+                / "motion_correction"
+                / _MOTION_FILE
             )
             for tiff_path in preproc_targets
         }
     )
 
 
-def set_up_suite2p_photon_mosaic_roi_targets(
+def set_up_roi_targets(
     preproc_targets: list[str],
 ) -> list[str]:
     """Generate photon-mosaic ROI extraction targets from preprocessed TIFFs.
 
     ROI extraction runs once per session, on the registered imaging, so
     there is one target per ``funcimg`` folder:
-    ``suite2p_pm_roi_extraction/segmentation_log.json``.
+    ``roi_extraction/segmentation_log.json``.
 
     Parameters
     ----------
@@ -265,8 +263,8 @@ def set_up_suite2p_photon_mosaic_roi_targets(
         {
             str(
                 Path(tiff_path).parent
-                / "suite2p_pm_roi_extraction"
-                / _SUITE2P_PM_ROI_FILE
+                / "roi_extraction"
+                / _ROI_FILE
             )
             for tiff_path in preproc_targets
         }

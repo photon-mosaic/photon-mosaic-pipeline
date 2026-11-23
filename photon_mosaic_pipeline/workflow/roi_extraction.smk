@@ -2,7 +2,7 @@ from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
 from photon_mosaic_pipeline.paths_selection import _DERIVATIVES
 
 
-rule suite2p_pm_roi_extraction:
+rule roi_extraction:
     input:
         registered=cross_platform_path(
             project_path
@@ -10,7 +10,7 @@ rule suite2p_pm_roi_extraction:
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
-            / "suite2p_pm_motion_correction"
+            / "motion_correction"
             / "traces_cached_seg0.raw"
         ),
     output:
@@ -21,7 +21,7 @@ rule suite2p_pm_roi_extraction:
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
-            / "suite2p_pm_roi_extraction"
+            / "roi_extraction"
             / "segmentation_log.json"
         ),
         roi_analyzer=cross_platform_path(
@@ -30,7 +30,7 @@ rule suite2p_pm_roi_extraction:
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
-            / "suite2p_pm_roi_extraction"
+            / "roi_extraction"
             / "roi_analyzer"
             / "photon_mosaic_info.json"
         ),
@@ -40,7 +40,7 @@ rule suite2p_pm_roi_extraction:
     resources:
         **(slurm_config if config.get("use_slurm") else {}),
     run:
-        from photon_mosaic_pipeline.rules.photon_mosaic_suite2p_roi_extraction import run_suite2p_roi_extraction
+        from photon_mosaic_pipeline.rules.roi_extraction import run_suite2p_roi_extraction
         from pathlib import Path
 
         run_suite2p_roi_extraction(

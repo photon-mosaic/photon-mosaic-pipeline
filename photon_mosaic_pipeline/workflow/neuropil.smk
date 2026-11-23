@@ -10,7 +10,7 @@ The neuropil rule:
 - Saves both inside the ROI analyzer (extensions/neuropil/, extensions/fluorescence/)
 - Supports SLURM cluster execution with configurable resources
 
-Input:  ROI analyzer (suite2p_pm_roi_extraction/roi_analyzer/)
+Input:  ROI analyzer (roi_extraction/roi_analyzer/)
 Output: roi_analyzer/extensions/fluorescence/fluorescence.npy (frames x ROIs)
 """
 
@@ -26,7 +26,7 @@ rule neuropil:
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
-            / "suite2p_pm_roi_extraction"
+            / "roi_extraction"
             / "roi_analyzer"
             / "photon_mosaic_info.json"
         ),
@@ -37,7 +37,7 @@ rule neuropil:
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
-            / "suite2p_pm_roi_extraction"
+            / "roi_extraction"
             / "roi_analyzer"
             / "extensions"
             / "fluorescence"
