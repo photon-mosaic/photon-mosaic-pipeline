@@ -11,7 +11,7 @@ _DERIVATIVES = "derivatives"
 _SUITE2P_FILES = ["F.npy", "Fneu.npy", "data.bin"]
 _MOTION_FILE = "traces_cached_seg0.raw"
 _ROI_FILE = "segmentation_log.json"
-_ROI_ANALYZER = Path("roi_extraction", "roi_analyzer", "extensions")
+_ROI_ANALYZER = Path("roi_analyzer", "extensions")
 _NEUROPIL_FILE = _ROI_ANALYZER / "fluorescence" / "fluorescence.npy"
 _DFF_FILE = _ROI_ANALYZER / "df_over_f" / "df_over_f.npy"
 
@@ -163,8 +163,7 @@ def set_up_neuropil_targets(preproc_targets: list[str]) -> list[str]:
 
     Neuropil correction runs once per session on its ROI analyzer, so there
     is one target per ``funcimg`` folder: the neuropil-corrected
-    fluorescence, ``roi_extraction/roi_analyzer/extensions/
-    fluorescence/fluorescence.npy``.
+    fluorescence, ``roi_analyzer/extensions/fluorescence/fluorescence.npy``.
 
     Parameters
     ----------
@@ -187,9 +186,9 @@ def set_up_neuropil_targets(preproc_targets: list[str]) -> list[str]:
 def set_up_dff_targets(preproc_targets: list[str]) -> list[str]:
     """Generate dF/F targets from preprocessed TIFF paths.
 
-    dF/F runs once per session on its ROI analyzer, so there is one target
-    per ``funcimg`` folder: ``roi_extraction/roi_analyzer/
-    extensions/df_over_f/df_over_f.npy``.
+    dF/F runs once per session on its ROI analyzer, so there is one
+    target per ``funcimg`` folder:
+    ``roi_analyzer/extensions/df_over_f/df_over_f.npy``.
 
     Parameters
     ----------

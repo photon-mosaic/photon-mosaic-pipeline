@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import photon_mosaic as pm
 from photon_mosaic.segmentation import run_segmentation
 
@@ -7,28 +5,34 @@ from photon_mosaic.segmentation import run_segmentation
 def run_suite2p_roi_extraction(
     output_path,
     registered_path,
+    roi_analyzer_path,
     algorithm="cellpose",
     suite2p=None,
 ):
     """
     Detect ROIs with Suite2p on the registered imaging and set up an
-    ROI analyzer on the ROIs classified as cells.
+    ROI analyzer on them.
 
-    Arguments after ``registered_path`` match the config's ``segmentation``
-    section.
+    Every detected ROI goes into the analyzer. Suite2p's built-in classifier
+    result is kept as the ``iscell`` / ``iscell_probability`` ROI
+    properties, so cells can be selected at analysis time, e.g.
+    ``rois.get_property("iscell")``.
+
+    Arguments after ``roi_analyzer_path`` match the config's
+    ``segmentation`` section.
 
     Parameters
     ----------
     output_path : str
         Segmentation folder. Receives photon-mosaic's
         ``segmentation_params.json``, ``segmentation_log.json``, imaging
-        provenance, all detected ROIs under ``rois/`` and the cell-only ROI
-        analyzer under ``roi_analyzer/`` (load with
-        ``pm.load_roi_analyzer``).
+        provenance and all detected ROIs under ``rois/``.
     registered_path : str
         Folder holding the registered imaging saved by the registration
-        rule (the folder containing its
-        ``traces_cached_seg0.raw``).
+        rule (the folder containing its ``traces_cached_seg0.raw``).
+    roi_analyzer_path : str
+        Folder for the ROI analyzer (load with ``pm.load_roi_analyzer``).
+        The neuropil and dF/F steps add their results to it.
     algorithm : str
         Suite2p detection algorithm: "cellpose", "sparsery" or "sourcery".
     suite2p : dict, optional
@@ -54,19 +58,13 @@ def run_suite2p_roi_extraction(
         **settings,
     )
 
-    # suite2p's built-in classifier labels each ROI as cell / not cell
-    # (the "iscell" property); keep only the cells.
     if rois.get_num_rois() == 0:
         raise ValueError(f"Segmentation found no ROIs; see {output_path}")
-    is_cell = rois.get_property("iscell")
-    cell_rois = rois.select_rois(
-        [roi_id for roi_id, cell in zip(rois.roi_ids, is_cell) if cell]
-    )
 
     pm.create_roi_analyzer(
-        cell_rois,
+        rois,
         registered_imaging,
         format="binary_folder",
-        folder=Path(output_path) / "roi_analyzer",
+        folder=roi_analyzer_path,
         overwrite=True,
     )

@@ -30,7 +30,6 @@ rule roi_extraction:
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
-            / "roi_extraction"
             / "roi_analyzer"
             / "photon_mosaic_info.json"
         ),
@@ -46,5 +45,6 @@ rule roi_extraction:
         run_suite2p_roi_extraction(
             str(Path(output.log).resolve().parent),
             str(Path(input.registered).resolve().parent),
+            str(Path(output.roi_analyzer).resolve().parent),
             **config.get("segmentation", {}),
         )

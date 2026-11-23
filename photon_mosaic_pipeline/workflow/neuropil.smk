@@ -1,7 +1,7 @@
 """
 Neuropil Correction Module
 
-Neuropil correction with photon-mosaic's ROI analyzer, on the cells from the
+Neuropil correction with photon-mosaic's ROI analyzer, on the ROIs from the
 ROI extraction step.
 
 The neuropil rule:
@@ -10,7 +10,7 @@ The neuropil rule:
 - Saves both inside the ROI analyzer (extensions/neuropil/, extensions/fluorescence/)
 - Supports SLURM cluster execution with configurable resources
 
-Input:  ROI analyzer (roi_extraction/roi_analyzer/)
+Input:  ROI analyzer (funcimg/roi_analyzer/)
 Output: roi_analyzer/extensions/fluorescence/fluorescence.npy (frames x ROIs)
 """
 
@@ -26,7 +26,6 @@ rule neuropil:
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
-            / "roi_extraction"
             / "roi_analyzer"
             / "photon_mosaic_info.json"
         ),
@@ -37,7 +36,6 @@ rule neuropil:
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
-            / "roi_extraction"
             / "roi_analyzer"
             / "extensions"
             / "fluorescence"
