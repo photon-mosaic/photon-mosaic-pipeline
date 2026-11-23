@@ -21,6 +21,7 @@ from photon_mosaic_pipeline.paths_selection import (
     adapt_paths_to_output_pattern,
     set_up_suite2p_targets,
     set_up_suite2p_photon_mosaic_targets,
+    set_up_suite2p_photon_mosaic_roi_targets,
     set_up_neuropil_targets,
     set_up_dff_targets,
     _RAWDATA,
@@ -81,9 +82,15 @@ logger.info(f"Preprocessing targets: {preproc_targets}")
 
 suite2p_targets = set_up_suite2p_targets(preproc_targets)
 suite2p_photon_mosaic_targets = set_up_suite2p_photon_mosaic_targets(preproc_targets)
+suite2p_photon_mosaic_roi_targets = set_up_suite2p_photon_mosaic_roi_targets(
+    preproc_targets
+)
 
 logger.info(f"Suite2p targets: {suite2p_targets}")
 logger.info(f"Suite2p photon mosaic targets: {suite2p_photon_mosaic_targets}")
+logger.info(
+    f"Suite2p photon mosaic ROI targets: {suite2p_photon_mosaic_roi_targets}"
+)
 
 neuropil_targets = set_up_neuropil_targets(preproc_targets)
 
@@ -97,6 +104,7 @@ logger.info(f"dF/F targets: {dff_targets}")
 include: "preprocessing.smk"
 #include: "suite2p.smk"
 include: "suite2p_photon_mosaic_registration.smk"
+include: "suite2p_photon_mosaic_roi_extraction.smk"
 #include: "neuropil.smk"
 #include: "dff.smk"
 
@@ -106,5 +114,6 @@ rule all:
         preproc_targets,
         #suite2p_targets,
         suite2p_photon_mosaic_targets,
+        suite2p_photon_mosaic_roi_targets,
         #neuropil_targets,
         #dff_targets,

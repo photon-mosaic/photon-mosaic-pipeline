@@ -9,7 +9,8 @@ logger = logging.getLogger(__name__)
 _RAWDATA = "rawdata"
 _DERIVATIVES = "derivatives"
 _SUITE2P_FILES = ["F.npy", "Fneu.npy", "data.bin"]
-_SUITE2P_PM_FILE = "binary.json"
+_SUITE2P_PM_FILE = "traces_cached_seg0.raw"
+_SUITE2P_PM_ROI_FILE = "segmentation_log.json"
 _NEUROPIL_FILES = ["Fc.npy"]
 _DFF_FILES = ["dFF.npy"]
 
@@ -213,7 +214,7 @@ def set_up_suite2p_photon_mosaic_targets(
 
     Registration runs once per session, on all its TIFFs together, so there
     is one target per ``funcimg`` folder:
-    ``suite2p_pm_motion_correction/binary.json``.
+    ``suite2p_pm_motion_correction/traces_cached_seg0.raw``.
 
     Parameters
     ----------
@@ -223,7 +224,7 @@ def set_up_suite2p_photon_mosaic_targets(
     Returns
     -------
     list[str]
-        One binary.json path per session, in sorted order.
+        One traces_cached_seg0.raw path per session, in sorted order.
     """
     return sorted(
         {
@@ -231,6 +232,37 @@ def set_up_suite2p_photon_mosaic_targets(
                 Path(tiff_path).parent
                 / "suite2p_pm_motion_correction"
                 / _SUITE2P_PM_FILE
+            )
+            for tiff_path in preproc_targets
+        }
+    )
+
+
+def set_up_suite2p_photon_mosaic_roi_targets(
+    preproc_targets: list[str],
+) -> list[str]:
+    """Generate photon-mosaic ROI extraction targets from preprocessed TIFFs.
+
+    ROI extraction runs once per session, on the registered imaging, so
+    there is one target per ``funcimg`` folder:
+    ``suite2p_pm_roi_extraction/segmentation_log.json``.
+
+    Parameters
+    ----------
+    preproc_targets : list[str]
+        Preprocessed TIFF paths (output of adapt_paths_to_output_pattern).
+
+    Returns
+    -------
+    list[str]
+        One segmentation_log.json path per session, in sorted order.
+    """
+    return sorted(
+        {
+            str(
+                Path(tiff_path).parent
+                / "suite2p_pm_roi_extraction"
+                / _SUITE2P_PM_ROI_FILE
             )
             for tiff_path in preproc_targets
         }

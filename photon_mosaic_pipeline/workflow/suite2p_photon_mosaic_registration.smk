@@ -18,14 +18,14 @@ rule suite2p_pm_motion_correction:
             and p.parts[p.parts.index(_RAWDATA) + 2] == wildcards.session_name
         ],
     output:
-        json=cross_platform_path(
+        registered=cross_platform_path(
             project_path
             / _DERIVATIVES
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
             / "suite2p_pm_motion_correction"
-            / "binary.json"
+            / "traces_cached_seg0.raw"
         ),
     wildcard_constraints:
         subject_name="|".join(_subject_names),
@@ -33,11 +33,11 @@ rule suite2p_pm_motion_correction:
     resources:
         **(slurm_config if config.get("use_slurm") else {}),
     run:
-        from photon_mosaic_pipeline.rules.photon_mosaic_suite2p_run import run_suite2p_registration
+        from photon_mosaic_pipeline.rules.photon_mosaic_suite2p_registration import run_suite2p_registration
         from pathlib import Path
 
         run_suite2p_registration(
-            str(Path(output.json).resolve().parent),
+            str(Path(output.registered).resolve().parent),
             input.tiffs,
             **config.get("registration", {}),
         )

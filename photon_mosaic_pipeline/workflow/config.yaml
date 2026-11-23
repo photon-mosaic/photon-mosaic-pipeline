@@ -90,6 +90,25 @@ registration:
     spatial_taper: 40  # Edge pixels to ignore
 
 # ============================================================================
+# ROI Extraction (photon-mosaic)
+# ============================================================================
+# Suite2p ROI detection with photon-mosaic, run on the registered imaging
+# from the Motion Correction step.
+segmentation:
+  algorithm: cellpose  # Detection algorithm: cellpose, sparsery or sourcery
+
+  # Passed straight to photon-mosaic's run_segmentation(method="suite2p"):
+  # any Suite2pSegmentationSettings field. Anything not listed uses its
+  # default. fs defaults to the frame rate from the ScanImage metadata.
+  suite2p:
+    diameter: [12, 12]  # Expected cell diameter in pixels [y, x]; [30, 30] = Cellpose-SAM native scale
+    tau: 1.0  # Indicator timescale (s): GCaMP6s ~1.5, GCaMP6f ~0.7
+    device: cpu  # Torch device: cpu, cuda or mps
+    threshold_scaling: 1.0  # Scale the detection threshold
+    max_overlap: 0.75  # Remove ROIs overlapping more than this
+    highpass_time: 100  # Temporal high-pass window (frames) before detection
+
+# ============================================================================
 # Suite2p Configuration
 # ============================================================================
 # Parameters for Suite2p processing pipeline
