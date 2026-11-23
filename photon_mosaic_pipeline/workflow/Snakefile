@@ -105,8 +105,8 @@ include: "preprocessing.smk"
 #include: "suite2p.smk"
 include: "suite2p_photon_mosaic_registration.smk"
 include: "suite2p_photon_mosaic_roi_extraction.smk"
-#include: "neuropil.smk"
-#include: "dff.smk"
+include: "neuropil.smk"
+include: "dff.smk"
 
 
 rule all:
@@ -115,5 +115,5 @@ rule all:
         #suite2p_targets,
         suite2p_photon_mosaic_targets,
         suite2p_photon_mosaic_roi_targets,
-        #neuropil_targets,
-        #dff_targets,
+        neuropil_targets,
+        dff_targets,

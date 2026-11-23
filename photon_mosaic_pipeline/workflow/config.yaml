@@ -192,14 +192,24 @@ suite2p_ops:
 # ============================================================================
 # Neuropil Correction Configuration
 # ============================================================================
+# photon-mosaic ROI analyzer, on the cells from ROI Extraction. Each
+# subsection is passed straight to the matching roi_analyzer.compute() call;
+# anything not listed uses photon-mosaic's defaults.
 neuropil_ops:
-  neucoeff: 0.7        # Neuropil coefficient for Fc = F - neucoeff * (Fneu - median(Fneu))
+  neuropil:
+    inner_neuropil_radius: 2  # Pixels between ROI and neuropil ring
+    min_neuropil_pixels: 350  # Min pixels in the neuropil ring
+  fluorescence:
+    use_neuropil: true  # Subtract the neuropil
+    neuropil_weight: 0.7  # Neuropil coefficient (Fc = F - neuropil_weight * Fneu)
 
 # ============================================================================
 # dF/F Calculation Configuration
 # ============================================================================
+# Passed straight to photon-mosaic's roi_analyzer.compute("df_over_f").
 dff_ops:
-  gmm_ncomponents: 2   # Number of GMM components for baseline F0 estimation
+  method: percentile  # Baseline F0: percentile, running_percentile or maximin (suite2p-style)
+  win_baseline: 60.0  # Sliding baseline window (s)
 
 # ============================================================================
 # SLURM Configuration

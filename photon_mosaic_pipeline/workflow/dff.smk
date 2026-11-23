@@ -1,35 +1,35 @@
 """
 dF/F Calculation Module
 
-This Snakefile module handles the dF/F calculation step of the photon mosaic pipeline.
-It takes neuropil-corrected traces and computes dF/F.
+dF/F with photon-mosaic's ROI analyzer, from the neuropil-corrected
+fluorescence computed by the neuropil rule.
 
 The dff rule:
-- Takes Fc.npy from the neuropil correction step as input
-- Computes dF/F using a Gaussian Mixture Model to estimate baseline F0
-- Outputs dFF.npy and F0.npy in dff/plane0/ directory
+- Estimates each ROI's baseline F0 and computes (F - F0) / F0
+- Saves dF/F and F0 inside the ROI analyzer (extensions/df_over_f/)
 - Supports SLURM cluster execution with configurable resources
 
-Input:  Neuropil-corrected traces (Fc.npy) in neuropil/plane0/ directory
-Output: dF/F results (dFF.npy, F0.npy) in dff/plane0/ directory
+Input:  roi_analyzer/extensions/fluorescence/fluorescence.npy
+Output: roi_analyzer/extensions/df_over_f/df_over_f.npy (frames x ROIs)
 """
 
-import re
 from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
 from photon_mosaic_pipeline.paths_selection import _DERIVATIVES
 
 
 rule dff:
     input:
-        Fc=cross_platform_path(
+        fluorescence=cross_platform_path(
             project_path
             / _DERIVATIVES
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
-            / "neuropil"
-            / "plane0"
-            / "Fc.npy"
+            / "suite2p_pm_roi_extraction"
+            / "roi_analyzer"
+            / "extensions"
+            / "fluorescence"
+            / "fluorescence.npy"
         ),
     output:
         dFF=cross_platform_path(
@@ -38,9 +38,11 @@ rule dff:
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
-            / "dff"
-            / "plane0"
-            / "dFF.npy"
+            / "suite2p_pm_roi_extraction"
+            / "roi_analyzer"
+            / "extensions"
+            / "df_over_f"
+            / "df_over_f.npy"
         ),
     wildcard_constraints:
         subject_name="|".join(_subject_names),
@@ -51,11 +53,8 @@ rule dff:
         from photon_mosaic_pipeline.rules.dff_run import calculate_dFF
         from pathlib import Path
 
-        input_path_Fc = Path(input.Fc).resolve()
-        output_path = Path(output.dFF).resolve()
-
+        # fluorescence.npy -> fluorescence/ -> extensions/ -> roi_analyzer/
         calculate_dFF(
-            str(input_path_Fc),
-            str(output_path),
-            config["dff_ops"],
+            str(Path(input.fluorescence).resolve().parents[2]),
+            **config.get("dff_ops", {}),
         )

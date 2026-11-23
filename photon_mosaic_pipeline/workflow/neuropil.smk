@@ -1,20 +1,18 @@
 """
 Neuropil Correction Module
 
-This Snakefile module handles neuropil correction for the photon mosaic pipeline.
-It takes Suite2p outputs and applies neuropil correction.
+Neuropil correction with photon-mosaic's ROI analyzer, on the cells from the
+ROI extraction step.
 
 The neuropil rule:
-- Takes F.npy and Fneu.npy from Suite2p as input
-- Applies neuropil correction: Fc = F - neucoeff * (Fneu - median(Fneu))
-- Outputs Fc.npy in neuropil/plane0/ directory
+- Computes a neuropil surround mask for each ROI
+- Extracts each ROI's fluorescence with the neuropil subtracted
+- Saves both inside the ROI analyzer (extensions/neuropil/, extensions/fluorescence/)
 - Supports SLURM cluster execution with configurable resources
 
-Input:  Suite2p results (F.npy, Fneu.npy) in suite2p/plane0/ directory
-Output: Neuropil-corrected traces (Fc.npy) in neuropil/plane0/ directory
+Input:  ROI analyzer (suite2p_pm_roi_extraction/roi_analyzer/)
+Output: roi_analyzer/extensions/fluorescence/fluorescence.npy (frames x ROIs)
 """
-
-from pathlib import Path
 
 from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
 from photon_mosaic_pipeline.paths_selection import _DERIVATIVES
@@ -22,36 +20,28 @@ from photon_mosaic_pipeline.paths_selection import _DERIVATIVES
 
 rule neuropil:
     input:
-        F=cross_platform_path(
+        roi_analyzer=cross_platform_path(
             project_path
             / _DERIVATIVES
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
-            / "suite2p"
-            / "plane0"
-            / "F.npy"
-        ),
-        Fneu=cross_platform_path(
-            project_path
-            / _DERIVATIVES
-            / "{subject_name}"
-            / "{session_name}"
-            / "funcimg"
-            / "suite2p"
-            / "plane0"
-            / "Fneu.npy"
+            / "suite2p_pm_roi_extraction"
+            / "roi_analyzer"
+            / "photon_mosaic_info.json"
         ),
     output:
-        Fc=cross_platform_path(
+        fluorescence=cross_platform_path(
             project_path
             / _DERIVATIVES
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
-            / "neuropil"
-            / "plane0"
-            / "Fc.npy"
+            / "suite2p_pm_roi_extraction"
+            / "roi_analyzer"
+            / "extensions"
+            / "fluorescence"
+            / "fluorescence.npy"
         ),
     wildcard_constraints:
         subject_name="|".join(_subject_names),
@@ -64,13 +54,7 @@ rule neuropil:
         )
         from pathlib import Path
 
-        input_path_F = Path(input.F).resolve()
-        input_path_Fneu = Path(input.Fneu).resolve()
-        output_path = Path(output.Fc).resolve()
-
         calculate_neuropil_correction(
-            str(input_path_F),
-            str(input_path_Fneu),
-            str(output_path),
-            config["neuropil_ops"],
+            str(Path(input.roi_analyzer).resolve().parent),
+            **config.get("neuropil_ops", {}),
         )

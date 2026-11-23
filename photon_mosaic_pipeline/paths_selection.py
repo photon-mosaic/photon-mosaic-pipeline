@@ -11,8 +11,11 @@ _DERIVATIVES = "derivatives"
 _SUITE2P_FILES = ["F.npy", "Fneu.npy", "data.bin"]
 _SUITE2P_PM_FILE = "traces_cached_seg0.raw"
 _SUITE2P_PM_ROI_FILE = "segmentation_log.json"
-_NEUROPIL_FILES = ["Fc.npy"]
-_DFF_FILES = ["dFF.npy"]
+_PM_ROI_ANALYZER = Path(
+    "suite2p_pm_roi_extraction", "roi_analyzer", "extensions"
+)
+_NEUROPIL_FILE = _PM_ROI_ANALYZER / "fluorescence" / "fluorescence.npy"
+_DFF_FILE = _PM_ROI_ANALYZER / "df_over_f" / "df_over_f.npy"
 
 
 def find_raw_data_paths(
@@ -158,10 +161,12 @@ def set_up_suite2p_targets(preproc_targets: list[str]) -> list[str]:
 
 
 def set_up_neuropil_targets(preproc_targets: list[str]) -> list[str]:
-    """Generate neuropil correction target paths from preprocessed TIFF paths.
+    """Generate neuropil correction targets from preprocessed TIFF paths.
 
-    For each preprocessed TIFF, generates the expected neuropil output files
-    under a neuropil/plane0/ subdirectory.
+    Neuropil correction runs once per session on its ROI analyzer, so there
+    is one target per ``funcimg`` folder: the neuropil-corrected
+    fluorescence, ``suite2p_pm_roi_extraction/roi_analyzer/extensions/
+    fluorescence/fluorescence.npy``.
 
     Parameters
     ----------
@@ -171,22 +176,22 @@ def set_up_neuropil_targets(preproc_targets: list[str]) -> list[str]:
     Returns
     -------
     list[str]
-        Neuropil target paths (Fc.npy for each input).
+        One fluorescence.npy path per session, in sorted order.
     """
-    neuropil_targets: list[str] = []
-    for tiff_path in preproc_targets:
-        neuropil_dir = Path(tiff_path).parent / "neuropil" / "plane0"
-        for fname in _NEUROPIL_FILES:
-            neuropil_targets.append(str(neuropil_dir / fname))
-
-    return neuropil_targets
+    return sorted(
+        {
+            str(Path(tiff_path).parent / _NEUROPIL_FILE)
+            for tiff_path in preproc_targets
+        }
+    )
 
 
 def set_up_dff_targets(preproc_targets: list[str]) -> list[str]:
-    """Generate dF/F target paths from preprocessed TIFF paths.
+    """Generate dF/F targets from preprocessed TIFF paths.
 
-    For each preprocessed TIFF, generates the expected dFF output files
-    under a dff/plane0/ subdirectory.
+    dF/F runs once per session on its ROI analyzer, so there is one target
+    per ``funcimg`` folder: ``suite2p_pm_roi_extraction/roi_analyzer/
+    extensions/df_over_f/df_over_f.npy``.
 
     Parameters
     ----------
@@ -196,15 +201,14 @@ def set_up_dff_targets(preproc_targets: list[str]) -> list[str]:
     Returns
     -------
     list[str]
-        dFF target paths (dFF.npy for each input).
+        One df_over_f.npy path per session, in sorted order.
     """
-    dff_targets: list[str] = []
-    for tiff_path in preproc_targets:
-        dff_dir = Path(tiff_path).parent / "dff" / "plane0"
-        for fname in _DFF_FILES:
-            dff_targets.append(str(dff_dir / fname))
-
-    return dff_targets
+    return sorted(
+        {
+            str(Path(tiff_path).parent / _DFF_FILE)
+            for tiff_path in preproc_targets
+        }
+    )
 
 
 def set_up_suite2p_photon_mosaic_targets(
@@ -267,3 +271,4 @@ def set_up_suite2p_photon_mosaic_roi_targets(
             for tiff_path in preproc_targets
         }
     )
+

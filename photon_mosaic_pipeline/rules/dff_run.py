@@ -1,95 +1,42 @@
 """
-Snakemake rule for calculating dF/F.
+Snakemake rule for calculating dF/F, with photon-mosaic's ROI analyzer.
 """
 
 import logging
-from pathlib import Path
 
-import numpy as np
-from sklearn import mixture
+import photon_mosaic as pm
 
 logger = logging.getLogger(__name__)
 
 
-def _save_split_dFF(
-    save_folder: Path, dset_dir: Path, n_components: int
-) -> None:
-    """Save dF/F traces for each dataset split.
+def calculate_dFF(roi_analyzer_path: str, **df_over_f) -> None:
+    """Calculate dF/F from the neuropil-corrected fluorescence traces.
+
+    Needs the fluorescence computed by the neuropil rule. The result is
+    saved inside the ROI analyzer, under ``extensions/df_over_f/``
+    (``df_over_f.npy`` and ``f0.npy``, each frames x ROIs). Load it back
+    with::
+
+        analyzer = pm.load_roi_analyzer(roi_analyzer_path)
+        dff = analyzer.get_extension("df_over_f").get_data()
 
     Parameters
     ----------
-    save_folder : Path
-        Folder where the dF/F traces will be saved.
-    dset_dir : Path
-        Directory containing the split dataset Fc traces.
-    n_components : int
-        Number of components for the Gaussian Mixture Model.
+    roi_analyzer_path : str
+        ROI analyzer folder saved by the ROI extraction rule.
+    **df_over_f
+        Settings for ``roi_analyzer.compute("df_over_f")``, from the
+        config's ``dff_ops`` section.
     """
-    out_dset_dir = save_folder / "dset_separated"
-    out_dset_dir.mkdir(parents=True, exist_ok=True)
-
-    for fc_file in sorted(dset_dir.glob("Fc_dset*.npy")):
-        # "Fc_dset0.npy" -> "0"
-        idx = fc_file.stem[len("Fc_dset") :]
-
-        dff_i, f0_i = dFF(np.load(fc_file), n_components=n_components)
-
-        np.save(out_dset_dir / f"dFF_dset{idx}.npy", dff_i)
-        np.save(out_dset_dir / f"F0_dset{idx}.npy", f0_i)
-        logger.info(
-            f"Saved dF/F traces to {out_dset_dir / f'dFF_dset{idx}.npy'}"
+    if "gmm_ncomponents" in df_over_f:
+        raise ValueError(
+            "dff_ops.gmm_ncomponents is from the old GMM-baseline dF/F and is "
+            "no longer used. Replace dff_ops with photon-mosaic df_over_f "
+            "settings (see the default config.yaml)."
         )
 
-
-def calculate_dFF(
-    input_path_Fc: str,
-    output_path: str,
-    user_ops_dict: dict,
-) -> None:
-    """Calculate dF/F from neuropil-corrected fluorescence traces.
-    Takes Fc.npy (output of neuropil correction) and computes dF/F
-    using a Gaussian Mixture Model to estimate baseline F0.
-    Saves dFF.npy and F0.npy to the output directory.
-
-    Parameters
-    ----------
-    input_path_Fc : str
-        Path to Fc.npy (neuropil-corrected traces from neuropil rule).
-    output_path : str
-        Path where dFF.npy and F0.npy will be saved.
-    user_ops_dict : dict
-        Dictionary of options. Must contain 'gmm_ncomponents'.
-    """
-    path_Fc = Path(input_path_Fc)
-    save_folder = Path(output_path).parent
-    save_folder.mkdir(parents=True, exist_ok=True)
+    roi_analyzer = pm.load_roi_analyzer(roi_analyzer_path)
 
     logger.info("Calculating dF/F...")
-
-    Fc = np.load(path_Fc)
-    n_components = user_ops_dict["gmm_ncomponents"]
-
-    logger.info(f"n components for dFF calculation: {n_components}")
-
-    dff, f0 = dFF(Fc, n_components=n_components)
-
-    np.save(save_folder / "dFF.npy", dff)
-    np.save(save_folder / "F0.npy", f0)
-    logger.info(f"Saved dF/F traces to {save_folder / 'dFF.npy'}")
-
-    dset_dir = path_Fc.parent / "dset_separated"
-    if dset_dir.is_dir():
-        _save_split_dFF(save_folder, dset_dir, n_components)
-
-
-def dFF(f, n_components=2, random_state=42):
-    f0 = np.zeros(f.shape[0])
-    for i in range(f.shape[0]):
-        gmm = mixture.GaussianMixture(
-            n_components=n_components, random_state=random_state
-        ).fit(f[i].reshape(-1, 1))
-        gmm_means = np.sort(gmm.means_[:, 0])
-        f0[i] = gmm_means[0]
-    f0 = f0.reshape(-1, 1)
-    dff = (f - f0) / f0
-    return dff, f0
+    roi_analyzer.compute("df_over_f", **df_over_f)
+    logger.info(f"Saved dF/F to {roi_analyzer_path}")
