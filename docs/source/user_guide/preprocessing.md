@@ -20,8 +20,6 @@ The contrast enhancement works by:
 2. Stretching the image intensity to use the full range between these values
 3. Saving the enhanced image with the prefix "enhanced_" in the output folder
 
-**Note**: If you are using the additional options in Suite2p (available in our custom fork), you may not need to perform contrast enhancement as a separate preprocessing step. This option automatically handles contrast normalization during the registration process. See the Suite2p configuration section for more details.
-
 ### Derotation
 
 The derotation step handles image derotation using the derotation package. Please refer to the [derotation package documentation](https://derotation.neuroinformatics.dev/) for more details.

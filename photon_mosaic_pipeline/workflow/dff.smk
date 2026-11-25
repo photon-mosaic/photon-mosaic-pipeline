@@ -1,61 +1,33 @@
 """
 dF/F Calculation Module
 
-This Snakefile module handles the dF/F calculation step of the photon mosaic pipeline.
-It takes neuropil-corrected traces and computes dF/F.
-
 The dff rule:
-- Takes Fc.npy from the neuropil correction step as input
-- Computes dF/F using a Gaussian Mixture Model to estimate baseline F0
-- Outputs dFF.npy and F0.npy in dff/plane0/ directory
-- Supports SLURM cluster execution with configurable resources
+- Takes the RoiAnalyzer with its fluorescence extension
+- Computes its df_over_f extension with the parameters in config["dff"]
 
-Input:  Neuropil-corrected traces (Fc.npy) in neuropil/plane0/ directory
-Output: dF/F results (dFF.npy, F0.npy) in dff/plane0/ directory
+Input: RoiAnalyzer with the fluorescence extension in roi_analyzer/
+Output: roi_analyzer/extensions/df_over_f/df_over_f.npy and f0.npy
 """
-
-import re
-from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
-from photon_mosaic_pipeline.paths_selection import _DERIVATIVES
 
 
 rule dff:
     input:
-        Fc=cross_platform_path(
-            project_path
-            / _DERIVATIVES
-            / "{subject_name}"
-            / "{session_name}"
-            / "funcimg"
-            / "neuropil"
-            / "plane0"
-            / "Fc.npy"
-        ),
+        previous=session_path(_RULE_OUTPUTS["fluorescence"]),
     output:
-        dFF=cross_platform_path(
-            project_path
-            / _DERIVATIVES
-            / "{subject_name}"
-            / "{session_name}"
-            / "funcimg"
-            / "dff"
-            / "plane0"
-            / "dFF.npy"
-        ),
+        session_path(_RULE_OUTPUTS["dff"]),
     wildcard_constraints:
         subject_name="|".join(_subject_names),
         session_name="|".join(_session_names),
     resources:
         **(slurm_config if config.get("use_slurm") else {}),
     run:
-        from photon_mosaic_pipeline.rules.dff_run import calculate_dFF
-        from pathlib import Path
+        from photon_mosaic_pipeline.rules.roi_analyzer_run import (
+            compute_extension,
+        )
 
-        input_path_Fc = Path(input.Fc).resolve()
-        output_path = Path(output.dFF).resolve()
-
-        calculate_dFF(
-            str(input_path_Fc),
-            str(output_path),
-            config["dff_ops"],
+        compute_extension(
+            Path(output[0]).resolve().parents[2],
+            "df_over_f",
+            config.get("dff"),
+            config.get("split_multitiff", False),
         )

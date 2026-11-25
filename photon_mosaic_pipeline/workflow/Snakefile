@@ -3,15 +3,16 @@ Photon Mosaic Main Workflow
 
 This is the main Snakefile that orchestrates the entire photon mosaic processing pipeline.
 It handles dataset discovery, target generation, and coordinates the preprocessing,
-suite2p analysis, neuropil correction, and dF/F calculation workflows.
+motion correction, segmentation, neuropil, fluorescence and dF/F workflows.
+The steps after preprocessing are run with the photon-mosaic package.
 
 The workflow:
 1. Discovers datasets and their TIFF files from the raw data directory
 2. Generates preprocessing targets for each dataset/session combination
-3. Generates suite2p analysis targets for processed data
-4. Generates neuropil correction targets from suite2p outputs
-5. Generates dF/F calculation targets from neuropil-corrected traces
-6. Includes preprocessing.smk, suite2p.smk, neuropil.smk, dff.smk modules
+3. Generates the motion correction, segmentation, neuropil, fluorescence
+   and dF/F targets of each session
+4. Includes preprocessing.smk, motion_correction.smk, segmentation.smk,
+   neuropil.smk, fluorescence.smk, dff.smk modules
 """
 
 from pathlib import Path
@@ -19,12 +20,12 @@ from photon_mosaic_pipeline import log_cuda_availability
 from photon_mosaic_pipeline.paths_selection import (
     find_raw_data_paths,
     adapt_paths_to_output_pattern,
-    set_up_suite2p_targets,
-    set_up_neuropil_targets,
-    set_up_dff_targets,
+    set_up_session_targets,
     _RAWDATA,
     _DERIVATIVES,
+    _RULE_OUTPUTS,
 )
+from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
 import logging
 
 # Configure logging based on config settings
@@ -78,28 +79,32 @@ preproc_targets = adapt_paths_to_output_pattern(all_selected_tiff_paths, output_
 
 logger.info(f"Preprocessing targets: {preproc_targets}")
 
-suite2p_targets = set_up_suite2p_targets(preproc_targets)
+session_targets = set_up_session_targets(preproc_targets)
 
-logger.info(f"Suite2p targets: {suite2p_targets}")
+logger.info(f"Session targets: {session_targets}")
 
-neuropil_targets = set_up_neuropil_targets(preproc_targets)
 
-logger.info(f"Neuropil targets: {neuropil_targets}")
-
-dff_targets = set_up_dff_targets(preproc_targets)
-
-logger.info(f"dF/F targets: {dff_targets}")
+def session_path(relative_path):
+    """Path of an output of a session, with the subject and session wildcards."""
+    return cross_platform_path(
+        project_path
+        / _DERIVATIVES
+        / "{subject_name}"
+        / "{session_name}"
+        / "funcimg"
+        / relative_path
+    )
 
 
 include: "preprocessing.smk"
-include: "suite2p.smk"
+include: "motion_correction.smk"
+include: "segmentation.smk"
 include: "neuropil.smk"
+include: "fluorescence.smk"
 include: "dff.smk"
 
 
 rule all:
     input:
         preproc_targets,
-        suite2p_targets,
-        neuropil_targets,
-        dff_targets,
+        session_targets,

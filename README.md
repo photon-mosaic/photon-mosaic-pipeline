@@ -17,7 +17,7 @@
 >
 > **This rename is a breaking change.** The PyPI package, CLI command, and import name all move to `photon-mosaic-pipeline`/`photon_mosaic_pipeline`, as do the config dir (`~/.photon_mosaic_pipeline/`) and output folder (`derivatives/photon-mosaic-pipeline/`). Existing configs and derivatives under the old names are **not** picked up automatically: move or re-generate them after upgrading.
 >
-> Both are part of the broader [**PhotonMosaic** framework](https://photon-mosaic.org), and we plan to integrate the two so the pipeline can run the methods you prototype with the API.
+> Both are part of the broader [**PhotonMosaic** framework](https://photon-mosaic.org), and the pipeline runs its analysis steps with the API, so it can run the methods you prototype with it.
 
 Each analysis step is integrated into an automated workflow, allowing you to chain preprocessing, registration, signal extraction, and post-processing steps into a single, reproducible pipeline. The design prioritizes usability for labs that process many imaging sessions and need to scale across an HPC cluster.
 
@@ -32,8 +32,8 @@ The goal of `photon-mosaic-pipeline` is to provide a modular, extensible, and us
 ## Roadmap
 ### Current features
 - Preprocessing: [derotation](https://github.com/neuroinformatics-unit/derotation) and contrast enhancement (see `photon_mosaic_pipeline/preprocessing`).
-- Registration & source extraction using [Suite2p](https://github.com/MouseLand/suite2p).
-- Cell detection / anatomical ROI extraction using [Cellpose (v3 or v4, including Cellpose-SAM)](https://github.com/MouseLand/cellpose).
+- Motion correction, ROI detection, neuropil, fluorescence and dF/F, each as its own step, run with the [photon-mosaic](https://github.com/photon-mosaic/photon-mosaic) API.
+- Its backends for now: [Suite2p](https://github.com/MouseLand/suite2p) for registration and ROI detection, and [Cellpose-SAM](https://github.com/MouseLand/cellpose) for anatomical ROI detection.
 
 ### Planned additions
 - Registration using [NoRMCorre](https://github.com/flatironinstitute/NoRMCorre) for non-rigid motion correction.

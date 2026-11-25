@@ -8,9 +8,15 @@ logger = logging.getLogger(__name__)
 
 _RAWDATA = "rawdata"
 _DERIVATIVES = "derivatives"
-_SUITE2P_FILES = ["F.npy", "Fneu.npy", "data.bin"]
-_NEUROPIL_FILES = ["Fc.npy"]
-_DFF_FILES = ["dFF.npy"]
+# The file each rule declares as its output, relative to the funcimg folder
+# of a session. Each is the last file photon-mosaic writes for that step.
+_RULE_OUTPUTS = {
+    "motion_correction": "motion_correction/si_folder.json",
+    "segmentation": "segmentation/segmentation_log.json",
+    "neuropil": "roi_analyzer/extensions/neuropil/run_info.json",
+    "fluorescence": "roi_analyzer/extensions/fluorescence/run_info.json",
+    "dff": "roi_analyzer/extensions/df_over_f/run_info.json",
+}
 
 
 def find_raw_data_paths(
@@ -130,11 +136,9 @@ def adapt_paths_to_output_pattern(
     return output_paths
 
 
-def set_up_suite2p_targets(preproc_targets: list[str]) -> list[str]:
-    """Generate Suite2p output target paths from preprocessed TIFF paths.
-
-    For each preprocessed TIFF, generates the expected Suite2p output files
-    (F.npy and data.bin) under a suite2p/plane0/ subdirectory.
+def set_up_session_targets(preproc_targets: list[str]) -> list[str]:
+    """Generate the output target paths of every session from the
+    preprocessed TIFF paths.
 
     Parameters
     ----------
@@ -144,62 +148,11 @@ def set_up_suite2p_targets(preproc_targets: list[str]) -> list[str]:
     Returns
     -------
     list[str]
-        Suite2p target paths (F.npy and data.bin for each input).
+        One target per rule in ``_RULE_OUTPUTS`` for each session.
     """
-    suite2p_targets: list[str] = []
-    for tiff_path in preproc_targets:
-        suite2p_dir = Path(tiff_path).parent / "suite2p" / "plane0"
-        for fname in _SUITE2P_FILES:
-            suite2p_targets.append(str(suite2p_dir / fname))
-
-    return suite2p_targets
-
-
-def set_up_neuropil_targets(preproc_targets: list[str]) -> list[str]:
-    """Generate neuropil correction target paths from preprocessed TIFF paths.
-
-    For each preprocessed TIFF, generates the expected neuropil output files
-    under a neuropil/plane0/ subdirectory.
-
-    Parameters
-    ----------
-    preproc_targets : list[str]
-        Preprocessed TIFF paths (output of adapt_paths_to_output_pattern).
-
-    Returns
-    -------
-    list[str]
-        Neuropil target paths (Fc.npy for each input).
-    """
-    neuropil_targets: list[str] = []
-    for tiff_path in preproc_targets:
-        neuropil_dir = Path(tiff_path).parent / "neuropil" / "plane0"
-        for fname in _NEUROPIL_FILES:
-            neuropil_targets.append(str(neuropil_dir / fname))
-
-    return neuropil_targets
-
-
-def set_up_dff_targets(preproc_targets: list[str]) -> list[str]:
-    """Generate dF/F target paths from preprocessed TIFF paths.
-
-    For each preprocessed TIFF, generates the expected dFF output files
-    under a dff/plane0/ subdirectory.
-
-    Parameters
-    ----------
-    preproc_targets : list[str]
-        Preprocessed TIFF paths (output of adapt_paths_to_output_pattern).
-
-    Returns
-    -------
-    list[str]
-        dFF target paths (dFF.npy for each input).
-    """
-    dff_targets: list[str] = []
-    for tiff_path in preproc_targets:
-        dff_dir = Path(tiff_path).parent / "dff" / "plane0"
-        for fname in _DFF_FILES:
-            dff_targets.append(str(dff_dir / fname))
-
-    return dff_targets
+    session_folders = sorted({Path(tiff).parent for tiff in preproc_targets})
+    return [
+        str(folder / output)
+        for folder in session_folders
+        for output in _RULE_OUTPUTS.values()
+    ]
