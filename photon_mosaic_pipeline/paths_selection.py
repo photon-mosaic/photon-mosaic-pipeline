@@ -16,6 +16,7 @@ _RULE_OUTPUTS = {
     "neuropil": "roi_analyzer/extensions/neuropil/run_info.json",
     "fluorescence": "roi_analyzer/extensions/fluorescence/run_info.json",
     "dff": "roi_analyzer/extensions/df_over_f/run_info.json",
+    "suite2p_export": "suite2p/plane0/ops.npy",
 }
 
 

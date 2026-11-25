@@ -3,16 +3,17 @@ Photon Mosaic Main Workflow
 
 This is the main Snakefile that orchestrates the entire photon mosaic processing pipeline.
 It handles dataset discovery, target generation, and coordinates the preprocessing,
-motion correction, segmentation, neuropil, fluorescence and dF/F workflows.
+motion correction, segmentation, neuropil, fluorescence and dF/F workflows,
+and exports the results in suite2p's format for the suite2p GUI.
 The steps after preprocessing are run with the photon-mosaic package.
 
 The workflow:
 1. Discovers datasets and their TIFF files from the raw data directory
 2. Generates preprocessing targets for each dataset/session combination
-3. Generates the motion correction, segmentation, neuropil, fluorescence
-   and dF/F targets of each session
+3. Generates the motion correction, segmentation, neuropil, fluorescence,
+   dF/F and suite2p export targets of each session
 4. Includes preprocessing.smk, motion_correction.smk, segmentation.smk,
-   neuropil.smk, fluorescence.smk, dff.smk modules
+   neuropil.smk, fluorescence.smk, dff.smk, suite2p_export.smk modules
 """
 
 from pathlib import Path
@@ -102,6 +103,7 @@ include: "segmentation.smk"
 include: "neuropil.smk"
 include: "fluorescence.smk"
 include: "dff.smk"
+include: "suite2p_export.smk"
 
 
 rule all:
