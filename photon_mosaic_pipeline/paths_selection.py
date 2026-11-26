@@ -11,6 +11,7 @@ _DERIVATIVES = "derivatives"
 _SUITE2P_FILES = ["F.npy", "Fneu.npy", "data.bin"]
 _NEUROPIL_FILES = ["Fc.npy"]
 _DFF_FILES = ["dFF.npy"]
+_CASCADE_FILES = ["spike_prob.npy"]
 
 
 def find_raw_data_paths(
@@ -203,3 +204,28 @@ def set_up_dff_targets(preproc_targets: list[str]) -> list[str]:
             dff_targets.append(str(dff_dir / fname))
 
     return dff_targets
+
+
+def set_up_cascade_targets(preproc_targets: list[str]) -> list[str]:
+    """Generate Cascade spike deconvolution target paths.
+
+    For each preprocessed TIFF, generates the expected Cascade output file
+    (spike_prob.npy) under a cascade/plane0/ subdirectory.
+
+    Parameters
+    ----------
+    preproc_targets : list[str]
+        Preprocessed TIFF paths (output of adapt_paths_to_output_pattern).
+
+    Returns
+    -------
+    list[str]
+        Cascade target paths (spike_prob.npy for each input).
+    """
+    cascade_targets: list[str] = []
+    for tiff_path in preproc_targets:
+        cascade_dir = Path(tiff_path).parent / "cascade" / "plane0"
+        for fname in _CASCADE_FILES:
+            cascade_targets.append(str(cascade_dir / fname))
+
+    return cascade_targets

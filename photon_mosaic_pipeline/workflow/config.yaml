@@ -181,6 +181,13 @@ dff_ops:
   gmm_ncomponents: 2   # Number of GMM components for baseline F0 estimation
 
 # ============================================================================
+# Spike Deconvolution Configuration
+# ============================================================================
+deconvolution_ops:
+  method: "cascade"
+  model_name: "Global_EXC_40Hz_smoothing25ms_causalkernel"
+
+# ============================================================================
 # SLURM Configuration
 # ============================================================================
 # Settings for SLURM job scheduling system

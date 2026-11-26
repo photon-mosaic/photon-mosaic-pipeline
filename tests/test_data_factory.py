@@ -54,6 +54,10 @@ class DataFactory:
         else:
             self.base_tiff_path = base_tiff_path
 
+        self.base_metadata_path = self.base_tiff_path.with_name(
+            f"{self.base_tiff_path.stem}_metadata.json"
+        )
+
         if not self.base_tiff_path.exists():
             raise FileNotFoundError(
                 f"Base TIFF file not found: {self.base_tiff_path}"
@@ -154,5 +158,15 @@ class DataFactory:
                         self.base_tiff_path,
                         session_path / "funcimg" / tiff_name,
                     )
+                    # The template TIFF has no embedded ScanImage header, so
+                    # ship a fake metadata JSON alongside it (read by the
+                    # cascade step to get the frame rate).
+                    if self.base_metadata_path.exists():
+                        shutil.copy2(
+                            self.base_metadata_path,
+                            session_path
+                            / "funcimg"
+                            / f"{Path(tiff_name).stem}_metadata.json",
+                        )
 
         return raw_data

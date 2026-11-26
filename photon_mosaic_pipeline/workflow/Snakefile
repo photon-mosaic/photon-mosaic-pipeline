@@ -11,7 +11,9 @@ The workflow:
 3. Generates suite2p analysis targets for processed data
 4. Generates neuropil correction targets from suite2p outputs
 5. Generates dF/F calculation targets from neuropil-corrected traces
-6. Includes preprocessing.smk, suite2p.smk, neuropil.smk, dff.smk modules
+6. Generates spike deconvolution (Cascade) targets from dF/F traces
+7. Includes preprocessing.smk, suite2p.smk, neuropil.smk, dff.smk,
+   deconvolution.smk modules
 """
 
 from pathlib import Path
@@ -22,6 +24,7 @@ from photon_mosaic_pipeline.paths_selection import (
     set_up_suite2p_targets,
     set_up_neuropil_targets,
     set_up_dff_targets,
+    set_up_cascade_targets,
     _RAWDATA,
     _DERIVATIVES,
 )
@@ -90,11 +93,16 @@ dff_targets = set_up_dff_targets(preproc_targets)
 
 logger.info(f"dF/F targets: {dff_targets}")
 
+cascade_targets = set_up_cascade_targets(preproc_targets)
+
+logger.info(f"Cascade targets: {cascade_targets}")
+
 
 include: "preprocessing.smk"
 include: "suite2p.smk"
 include: "neuropil.smk"
 include: "dff.smk"
+include: "deconvolution.smk"
 
 
 rule all:
@@ -103,3 +111,4 @@ rule all:
         suite2p_targets,
         neuropil_targets,
         dff_targets,
+        cascade_targets,

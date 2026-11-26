@@ -77,7 +77,8 @@ templates_path = ["_templates"]
 autosummary_generate = True
 numpydoc_class_members_toctree = False  # stops stubs warning
 # Don't enumerate inherited members in each class' Attributes/Methods summary.
-# Otherwise numpydoc lists ``logging.Formatter.converter`` (== ``time.localtime``)
+# Otherwise numpydoc lists ``logging.Formatter.converter``
+# (== ``time.localtime``)
 # on ``ColoredFormatter``, which autodoc cannot introspect (spurious warning).
 numpydoc_show_inherited_class_members = False
 #toc_object_entries_show_parents = "all"
@@ -122,22 +123,27 @@ html_theme_options = {
             # Label for this link
             "name": "GitHub",
             # URL where the link will redirect
-            "url": "https://github.com/photon-mosaic/photon-mosaic-pipeline",  # required
+            "url": "https://github.com/photon-mosaic/photon-mosaic-pipeline",
             # Icon class (if "type": "fontawesome"),
             # or path to local image (if "type": "local")
             "icon": "fa-brands fa-github",
             # The type of image to be used (see below for details)
             "type": "fontawesome",
-            "use_edit_page_button": False,  # Ensure the edit button doesn't interfere
-            "navigation_with_keys": False,  # Disable keyboard navigation between sections
-            "collapse_navigation": False,  # Ensure full page loads rather than AJAX content swap
+            "use_edit_page_button": False,  # Ensure the edit button doesn't 
+                                            # interfere
+            "navigation_with_keys": False,  # Disable keyboard navigation 
+                                            # between sections
+            "collapse_navigation": False,   # Ensure full page loads rather
+                                            # than AJAX content swap
         },
         {
             # Label for this link
             "name": "Zulip (chat)",
             # URL where the link will redirect
-            "url": "https://neuroinformatics.zulipchat.com/#narrow/channel/500681-photon-mosaic",  # required
-            # Icon class (if "type": "fontawesome"), or path to local image (if "type": "local")
+            "url": """https://neuroinformatics.zulipchat.com/
+                            #narrow/channel/500681-photon-mosaic""", # required
+            # Icon class (if "type": "fontawesome"), or path to local image 
+            # (if "type": "local")
             "icon": "fa-solid fa-comments",
             # The type of image to be used (see below for details)
             "type": "fontawesome",
@@ -184,7 +190,7 @@ html_logo = "_static/logo.png"
 #         "dependencies": ["requirements.txt"],
 #     },
 #     "reference_url": {"photon-mosaic": None},
-#     # "default_thumb_file": "source/_static/data_icon.png",  # default thumbnail image
+#     # "default_thumb_file": "source/_static/data_icon.png",
 #     "remove_config_comments": True,
 #     # do not render config params set as # sphinx_gallery_config [= value]
 # }
