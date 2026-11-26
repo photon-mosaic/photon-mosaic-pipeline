@@ -14,6 +14,11 @@ import yaml
 
 from photon_mosaic_pipeline import get_snakefile_path
 from photon_mosaic_pipeline.logging_config import ensure_dir
+from photon_mosaic_pipeline.multi_session import link_multi_session
+from photon_mosaic_pipeline.paths_selection import (
+    _PIPELINE_DIR,
+    get_derivatives_path,
+)
 
 
 def create_argument_parser():
@@ -36,6 +41,21 @@ def create_argument_parser():
         "--project_path",
         default=None,
         help="Override project_path in config file",
+    )
+    parser.add_argument(
+        "--multi-session-path",
+        nargs="+",
+        default=None,
+        help=(
+            "Process several sessions as one. A single folder uses the "
+            "session folders in its rawdata/ (or inside it, if it has no "
+            "rawdata/); several values are used as the session folders "
+            "themselves. Folders ending in -t<N> are concatenated in order "
+            "of N; if there are none, folders named ses-<NNN>_... are "
+            "concatenated in order of NNN. Output goes to "
+            "<main-folder>/derivatives/<subject>/<merged session>/, where "
+            "<main-folder> holds rawdata/."
+        ),
     )
     parser.add_argument(
         "--jobs", default="1", help="Number of parallel jobs to run"
@@ -196,13 +216,13 @@ def update_default_config(config_path, project_path):
                 f.write(line)
 
 
-def setup_output_directories(project_path):
+def setup_output_directories(derivatives_path):
     """Create necessary output directories for the pipeline.
 
     Parameters
     ----------
-    project_path : Path
-        Project path
+    derivatives_path : Path
+        Folder the pipeline writes its outputs to
 
     Returns
     -------
@@ -211,7 +231,7 @@ def setup_output_directories(project_path):
     """
     logger = logging.getLogger(__name__)
 
-    output_dir = project_path / "derivatives" / "photon-mosaic-pipeline"
+    output_dir = derivatives_path / _PIPELINE_DIR
     logger.debug(f"Creating output directory: {output_dir}")
 
     logs_dir = output_dir / "logs"
@@ -343,13 +363,8 @@ def configure_slurm_execution(cmd, config):
     cmd.append("--slurm-keep-successful-logs")
 
     # Configure SLURM log directory to persist logs
-    project_path = Path(config["project_path"]).resolve()
     slurm_logdir = (
-        project_path
-        / "derivatives"
-        / "photon-mosaic-pipeline"
-        / "logs"
-        / "slurm"
+        get_derivatives_path(config) / _PIPELINE_DIR / "logs" / "slurm"
     )
     ensure_dir(slurm_logdir, mode=0o755, parents=True, exist_ok=True)
 
@@ -367,8 +382,7 @@ def configure_slurm_execution(cmd, config):
     # location
     # %j = SLURM job ID, %x = job name (rule name)
     slurm_config["slurm_extra"] = (
-        f"--output={slurm_logdir}/%j_%x.out "
-        f"--error={slurm_logdir}/%j_%x.err"
+        f"--output={slurm_logdir}/%j_%x.out --error={slurm_logdir}/%j_%x.err"
     )
 
     logger.info(f"Configuration loaded: {slurm_config}")
@@ -546,9 +560,19 @@ def main():
     # Load and process configuration
     config, _ = load_and_process_config(args)
 
+    if args.multi_session_path:
+        staging, derivatives = link_multi_session(
+            args.multi_session_path, config
+        )
+        config["project_path"] = str(staging)
+        config["derivatives_path"] = str(derivatives)
+        # Links are already filtered and renamed, so take them all
+        config["dataset_discovery"] = {"tiff_patterns": ["*"]}
+
     # Set up output directories
-    project_path = Path(config["project_path"])
-    output_dir, logs_dir, configs_dir = setup_output_directories(project_path)
+    output_dir, logs_dir, configs_dir = setup_output_directories(
+        get_derivatives_path(config)
+    )
 
     # Save timestamped config for reproducibility
     timestamp, config_path = save_timestamped_config(config, configs_dir)

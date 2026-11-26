@@ -22,8 +22,8 @@ from photon_mosaic_pipeline.paths_selection import (
     set_up_suite2p_targets,
     set_up_neuropil_targets,
     set_up_dff_targets,
+    get_derivatives_path,
     _RAWDATA,
-    _DERIVATIVES,
 )
 import logging
 
@@ -43,10 +43,12 @@ onstart:
 
 
 project_path = Path(config["project_path"]).resolve()
+derivatives_path = get_derivatives_path(config)
 slurm_config = config.get("slurm", {})
 output_pattern = config["preprocessing"]["output_pattern"]
 
 logger.info(f"Project path: {project_path}")
+logger.info(f"Derivatives path: {derivatives_path}")
 
 # Log SLURM configuration
 use_slurm = config.get("use_slurm", False)
@@ -55,6 +57,17 @@ if use_slurm:
     logger.info(f"SLURM configuration: {slurm_config}")
 else:
     logger.info("SLURM execution disabled - running locally")
+
+
+def rule_resources(rule_name):
+    """SLURM resources for a rule: ``slurm`` updated with
+    ``slurm_rules[rule_name]``, where a null value drops that key (e.g.
+    ``gres: null`` for a CPU-only rule)."""
+    if not use_slurm:
+        return {}
+    overrides = (config.get("slurm_rules") or {}).get(rule_name) or {}
+    merged = {**slurm_config, **overrides}
+    return {key: value for key, value in merged.items() if value is not None}
 
 # Discover datasets and their TIFF files
 all_selected_tiff_paths = find_raw_data_paths(
@@ -74,7 +87,9 @@ _session_names = sorted(
     {p.parts[p.parts.index(_RAWDATA) + 2] for p in all_selected_tiff_paths}
 )
 
-preproc_targets = adapt_paths_to_output_pattern(all_selected_tiff_paths, output_pattern)
+preproc_targets = adapt_paths_to_output_pattern(
+    all_selected_tiff_paths, output_pattern, derivatives_path
+)
 
 logger.info(f"Preprocessing targets: {preproc_targets}")
 

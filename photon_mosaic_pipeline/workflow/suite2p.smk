@@ -13,15 +13,13 @@ Output: Suite2p analysis results (F.npy, data.bin) in suite2p/plane0/ directory
 
 import re
 from photon_mosaic_pipeline.snakemake_utils import cross_platform_path
-from photon_mosaic_pipeline.paths_selection import _DERIVATIVES
 
 
 rule suite2p:
     input:
         tiffs=lambda wildcards: [
             cross_platform_path(
-                project_path
-                / _DERIVATIVES
+                derivatives_path
                 / wildcards.subject_name
                 / wildcards.session_name
                 / "funcimg"
@@ -33,8 +31,7 @@ rule suite2p:
         ],
     output:
         F=cross_platform_path(
-            project_path
-            / _DERIVATIVES
+            derivatives_path
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
@@ -43,8 +40,7 @@ rule suite2p:
             / "F.npy"
         ),
         Fneu=cross_platform_path(
-            project_path
-            / _DERIVATIVES
+            derivatives_path
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
@@ -53,8 +49,7 @@ rule suite2p:
             / "Fneu.npy"
         ),
         bin=cross_platform_path(
-            project_path
-            / _DERIVATIVES
+            derivatives_path
             / "{subject_name}"
             / "{session_name}"
             / "funcimg"
@@ -64,8 +59,7 @@ rule suite2p:
         ),
     params:
         dataset_folder=lambda wildcards: cross_platform_path(
-            project_path
-            / _DERIVATIVES
+            derivatives_path
             / wildcards.subject_name
             / wildcards.session_name
             / "funcimg"
@@ -74,7 +68,7 @@ rule suite2p:
         subject_name="|".join(_subject_names),
         session_name="|".join(_session_names),
     resources:
-        **(slurm_config if config.get("use_slurm") else {}),
+        **rule_resources("suite2p"),
     run:
         from photon_mosaic_pipeline.rules.suite2p_run import run_suite2p
         from pathlib import Path
@@ -89,11 +83,10 @@ rule suite2p:
         )
 
         if config["suite2p_ops"].get("split_multitiff", False):
-            n_tiffs = len(input.tiffs)
-            if n_tiffs > 1:
+            if len(input.tiffs) > 1:
                 dset_dir = output_path.parent / "dset_separated"
-                for i in range(n_tiffs):
+                for tiff in input.tiffs:
                     for prefix in ("F", "Fneu", "spks", "stat", "iscell", "ops"):
-                        expected = dset_dir / f"{prefix}_dset{i}.npy"
+                        expected = dset_dir / f"{prefix}_{Path(tiff).stem}.npy"
                         if not expected.exists():
                             raise ValueError(f"Missing expected split file: {expected}")
